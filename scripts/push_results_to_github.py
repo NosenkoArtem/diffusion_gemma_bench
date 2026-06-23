@@ -9,8 +9,10 @@ in the remote URL.
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,26 +54,56 @@ def main() -> int:
         print("Dry run complete. Re-run with --commit to create a Git commit.")
         return 0
 
-    ensure_results_branch(args.branch)
-    git(["add", "-f", str(run_dir.relative_to(ROOT))])
-    git(["commit", "-m", f"Add benchmark results {run_id}"])
-
-    if args.push:
-        git(["push", args.remote, f"HEAD:{args.branch}"])
+    commit_results_in_temp_repo(
+        run_dir=run_dir,
+        branch=args.branch,
+        remote=args.remote,
+        run_id=run_id,
+        push=args.push,
+    )
     return 0
 
 
-def ensure_results_branch(branch: str) -> None:
-    current = git(["rev-parse", "--abbrev-ref", "HEAD"])
-    if current == branch:
-        return
-    existing = git(["branch", "--list", branch])
-    if existing.strip():
-        git(["switch", branch])
-    else:
-        git(["switch", "--orphan", branch])
-        # Keep the orphan branch focused on result artifacts. Tracked source
-        # files remain in the working tree but are not committed unless added.
+def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id: str, push: bool) -> None:
+    """Commit result artifacts without switching the current working tree.
+
+    Colab phases modify `results/*.json` in the code checkout. Switching that
+    checkout to an orphan results branch would fail or risk confusing local
+    state. A temporary checkout keeps the source tree untouched.
+    """
+
+    remote_url = git(["remote", "get-url", remote])
+    user_name = git(["config", "user.name"], check=False) or "Colab Benchmark Bot"
+    user_email = git(["config", "user.email"], check=False) or "colab-benchmark@example.invalid"
+    rel_run_dir = run_dir.relative_to(ROOT)
+
+    with tempfile.TemporaryDirectory(prefix="bench-results-") as tmp:
+        temp_repo = Path(tmp) / "repo"
+        temp_repo.mkdir(parents=True)
+        git_in(temp_repo, ["init"])
+        git_in(temp_repo, ["config", "user.name", user_name])
+        git_in(temp_repo, ["config", "user.email", user_email])
+        git_in(temp_repo, ["remote", "add", remote, remote_url])
+
+        fetch = git_in(temp_repo, ["fetch", "--depth", "1", remote, branch], check=False)
+        if fetch.returncode == 0:
+            git_in(temp_repo, ["checkout", "-B", branch, "FETCH_HEAD"])
+        else:
+            git_in(temp_repo, ["checkout", "--orphan", branch])
+
+        dest = temp_repo / rel_run_dir
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(run_dir, dest)
+
+        git_in(temp_repo, ["add", "-f", str(rel_run_dir)])
+        status = git_in(temp_repo, ["status", "--porcelain"]).stdout.strip()
+        if not status:
+            print("No result changes to commit.")
+            return
+        git_in(temp_repo, ["commit", "-m", f"Add benchmark results {run_id}"])
+        if push:
+            git_in(temp_repo, ["push", remote, f"HEAD:{branch}"])
 
 
 def git(args: list[str], check: bool = True) -> str:
@@ -79,6 +111,13 @@ def git(args: list[str], check: bool = True) -> str:
     if check and proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip() or proc.stdout.strip())
     return proc.stdout.strip()
+
+
+def git_in(cwd: Path, args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True)
+    if check and proc.returncode != 0:
+        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip())
+    return proc
 
 
 if __name__ == "__main__":
