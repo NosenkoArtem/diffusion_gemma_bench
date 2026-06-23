@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from .utils import RESULTS_DIR, public_env_snapshot, utc_now_iso, write_json
+from .utils import PROJECT_ROOT, RESULTS_DIR, git_revision, public_env_snapshot, utc_now_iso, write_json
 
 
 def run_preflight(profile: str = "auto") -> dict[str, Any]:
@@ -43,6 +43,7 @@ def run_preflight(profile: str = "auto") -> dict[str, Any]:
             "disk_total_gib": round(disk.total / (1024**3), 2),
         },
         "packages": packages,
+        "git": git_revision(PROJECT_ROOT),
         "secrets": public_env_snapshot(),
         "backend_capability_matrix": {
             "vllm": "not_checked_in_local_preflight",

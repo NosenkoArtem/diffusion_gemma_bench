@@ -10,5 +10,6 @@ venv/
 results/*.jsonl
 results/*.log
 results/*_raw.jsonl
+results/runs/
 reports/figures/*
 dist/*.zip

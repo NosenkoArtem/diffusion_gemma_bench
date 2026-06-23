@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .utils import RESULTS_DIR, ensure_dir, new_run_id, utc_now_iso, write_json
+from .utils import RESULTS_DIR, ensure_dir, git_revision, new_run_id, utc_now_iso, write_json
 
 
 def start_phase(phase: str, profile: str, run_id: str | None = None) -> dict[str, Any]:
@@ -20,6 +20,7 @@ def start_phase(phase: str, profile: str, run_id: str | None = None) -> dict[str
         "phase": phase,
         "profile": profile,
         "started_at": utc_now_iso(),
+        "git": git_revision(),
     }
     ensure_dir(RESULTS_DIR)
     write_json(RESULTS_DIR / "run_manifest.json", manifest)

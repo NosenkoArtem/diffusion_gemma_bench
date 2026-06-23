@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
@@ -98,6 +99,35 @@ def public_env_snapshot() -> dict[str, Any]:
     """Return environment flags without leaking secret values."""
 
     return {key: {"present": bool(os.environ.get(key))} for key in SECRET_KEYS}
+
+
+def git_revision(root: Path = PROJECT_ROOT) -> dict[str, Any]:
+    """Return git revision metadata when the project is inside a git checkout."""
+
+    def run_git(args: list[str]) -> str | None:
+        try:
+            proc = subprocess.run(
+                ["git", *args],
+                cwd=root,
+                text=True,
+                capture_output=True,
+                check=True,
+                timeout=10,
+            )
+        except (FileNotFoundError, subprocess.SubprocessError):
+            return None
+        return proc.stdout.strip()
+
+    commit = run_git(["rev-parse", "HEAD"])
+    branch = run_git(["rev-parse", "--abbrev-ref", "HEAD"])
+    dirty = run_git(["status", "--porcelain"])
+    return {
+        "is_git_checkout": commit is not None,
+        "commit_sha": commit,
+        "short_commit_sha": commit[:8] if commit else None,
+        "branch": branch,
+        "dirty": bool(dirty),
+    }
 
 
 def project_path(*parts: str) -> Path:

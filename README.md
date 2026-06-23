@@ -63,21 +63,16 @@ unittest.TextTestRunner(verbosity=2).run(suite)
 ## VS Code + Colab Kernel Smoke Test
 
 This is the preferred first integration test before downloading model weights.
+The full checklist lives in `docs/first_colab_experiment.md`.
 
-1. In VS Code, open `notebooks/01_colab_runner.ipynb`.
-2. Select a Google Colab kernel from the kernel picker.
-3. If the remote Colab runtime cannot see the local repository, create a source
-   bundle locally:
-
-   ```bash
-   python scripts/make_colab_bundle.py
-   ```
-
-4. Run the notebook cells top to bottom. When prompted, upload
-   `dist/diffusion_gemma_bench_source.zip`.
-5. The expected first smoke status is `PENDING_COLAB_BACKEND_GATE`. That means
-   the Colab kernel can run the repo, but real vLLM/model smoke tests have not
-   been enabled yet.
+1. Push this repository to GitHub.
+2. In VS Code, open `notebooks/01_colab_runner.ipynb`.
+3. Select a Google Colab kernel from the kernel picker.
+4. Set `REPO_URL` in the first notebook cell.
+5. Run the notebook cells through result packaging.
+6. The expected first smoke status is `PENDING_COLAB_BACKEND_GATE`. That means
+   the Colab kernel can clone and run the repo, but real vLLM/model smoke tests
+   have not been enabled yet.
 
 ## Data Policy
 
