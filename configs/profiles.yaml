@@ -1,0 +1,72 @@
+profiles:
+  q6_core_native:
+    status: PRIMARY_NATIVE_OPTIMIZED
+    purpose: primary_native_deployment_comparison
+    hardware:
+      min_total_vram_gib: 40
+      required_free_vram_before_load_gib: 37
+      max_peak_vram_fraction: 0.92
+    runtime:
+      max_model_len: 2048
+      max_num_seqs: 1
+      batch_size: 1
+      concurrency: 1
+      cpu_offload: false
+      tensor_parallel_size: 1
+      kv_cache: enabled
+      kv_cache_quantization: false
+      cross_request_prefix_cache: disabled_for_cold_track
+      thinking_mode: false
+
+  q5_core_native:
+    status: CONSTRAINED_NATIVE_OPTIMIZED
+    purpose: constrained_native_deployment_comparison
+    hardware:
+      min_total_vram_gib: 32
+      required_free_vram_before_load_gib: 29
+      max_peak_vram_fraction: 0.92
+    runtime:
+      max_model_len: 2048
+      max_num_seqs: 1
+      batch_size: 1
+      concurrency: 1
+      cpu_offload: false
+      tensor_parallel_size: 1
+      kv_cache: enabled
+      kv_cache_quantization: false
+      cross_request_prefix_cache: disabled_for_cold_track
+      thinking_mode: false
+
+  q4_pilot:
+    status: PILOT_ONLY
+    purpose: feasibility_smoke_only
+    hardware:
+      min_total_vram_gib: 24
+      required_free_vram_before_load_gib: 22
+      max_peak_vram_fraction: 0.92
+    runtime:
+      max_model_len: 1536
+      max_num_seqs: 1
+      batch_size: 1
+      concurrency: 1
+      cpu_offload: false
+      kv_cache: enabled
+      kv_cache_quantization: false
+      thinking_mode: false
+
+  q8_calibration:
+    status: QUANTIZATION_SENSITIVITY_PROXY
+    purpose: quantization_sensitivity_proxy
+    hardware:
+      min_total_vram_gib: 48
+      required_free_vram_before_load_gib: 44
+      max_peak_vram_fraction: 0.92
+    runtime:
+      max_model_len: 2048
+      max_num_seqs: 1
+      batch_size: 1
+      concurrency: 1
+      cpu_offload: false
+      kv_cache: enabled
+      kv_cache_quantization: false
+      thinking_mode: false

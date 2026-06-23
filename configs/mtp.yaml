@@ -1,0 +1,20 @@
+mtp:
+  assistant_repo_id: google/gemma-4-26B-A4B-it-assistant
+  method: mtp
+  candidate_num_speculative_tokens: [2, 4, 6]
+  default_num_speculative_tokens: 4
+  quality_guards:
+    valid_json_drop_pp: 3
+    task_success_drop_pp: 5
+  required_startup_checks:
+    - health_endpoint_ok
+    - server_logs_confirm_method_mtp
+    - assistant_loaded
+    - shared_kv_cache_confirmed_or_not_available
+    - no_restart
+    - no_oom
+  forbidden:
+    - generic_draft_model
+    - eagle
+    - ngram_speculation
+    - third_party_draft_model

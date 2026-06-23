@@ -1,0 +1,5 @@
+{"prefix_id":"warm_agent_v1","turn":1,"role":"system","content":"You are a tool-using assistant. Return exactly one JSON object and no other text."}
+{"prefix_id":"warm_agent_v1","turn":2,"role":"user","content":"I need help with order O-1001."}
+{"prefix_id":"warm_agent_v1","turn":3,"role":"assistant","content":"{\"type\":\"tool_call\",\"name\":\"get_order\",\"arguments\":{\"order_id\":\"O-1001\"}}"}
+{"prefix_id":"warm_agent_v1","turn":4,"role":"tool","content":"{\"ok\":true,\"data\":{\"order_id\":\"O-1001\",\"status\":\"delivered\",\"items\":[\"book\",\"lamp\"],\"returnable\":true}}"}
+{"prefix_id":"warm_agent_v1","turn":5,"role":"user","content":"Please continue with the next valid tool call for returning the book only."}

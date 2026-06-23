@@ -1,0 +1,45 @@
+models:
+  DG-Native:
+    role: primary_diffusion_model
+    repo_id: unsloth/diffusiongemma-26B-A4B-it-GGUF
+    base_tokenizer: google/diffusiongemma-26B-A4B-it
+    filenames:
+      q8_calibration: diffusiongemma-26B-A4B-it-Q8_0.gguf
+      q6_core_native: diffusiongemma-26B-A4B-it-Q6_K.gguf
+      q5_core_native: diffusiongemma-26B-A4B-it-Q5_K_M.gguf
+      q4_pilot: diffusiongemma-26B-A4B-it-Q4_K_M.gguf
+    deployment:
+      backend: vllm
+      sampler: native_diffusion
+      native_kv_cache: true
+      cpu_offload: false
+
+  G26-AR:
+    role: autoregressive_attribution_baseline
+    repo_id: unsloth/gemma-4-26B-A4B-it-GGUF
+    base_tokenizer: google/gemma-4-26B-A4B-it
+    filenames:
+      q8_calibration: gemma-4-26B-A4B-it-Q8_0.gguf
+      q6_core_native: gemma-4-26B-A4B-it-UD-Q6_K.gguf
+      q5_core_native: gemma-4-26B-A4B-it-UD-Q5_K_M.gguf
+      q4_pilot: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+    deployment:
+      backend: vllm
+      speculative_decoding: false
+      native_kv_cache: true
+      cpu_offload: false
+
+  G26-MTP:
+    role: primary_gemma_practical_profile
+    repo_id: unsloth/gemma-4-26B-A4B-it-GGUF
+    base_tokenizer: google/gemma-4-26B-A4B-it
+    target_model_ref: G26-AR
+    assistant:
+      repo_id: google/gemma-4-26B-A4B-it-assistant
+      precision: bfloat16
+      method: mtp
+    deployment:
+      backend: vllm
+      speculative_decoding: official_mtp_assistant_only
+      native_kv_cache: true
+      cpu_offload: false

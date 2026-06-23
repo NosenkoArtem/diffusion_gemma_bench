@@ -1,0 +1,5 @@
+timestamp: 2026-06-23T14:54:44+00:00
+action: STOP
+selected_profile: None
+hardware: {'platform': 'Windows-11-10.0.26200-SP0', 'python': '3.12.13 (main, Mar  3 2026, 15:01:35) [MSC v.1944 64 bit (AMD64)]', 'gpu': {'available': False}, 'disk_free_gib': 839.91, 'disk_total_gib': 952.85}
+packages: {'torch': None, 'vllm': None, 'cuda_visible_devices': None}

@@ -1,0 +1,55 @@
+phases:
+  preflight:
+    command: python run.py --profile auto --phase preflight
+    writes:
+      - results/preflight.json
+      - results/environment.txt
+  smoke:
+    command: python run.py --profile <selected_profile> --phase smoke
+    requires:
+      - preflight
+    models: [DG-Native, G26-AR, G26-MTP]
+    success_gates:
+      model_load_success: true
+      oom_count: 0
+      completion_success_rate_min: 0.90
+      json_parse_success_rate_min: 0.50
+      peak_vram_fraction_max: 0.92
+      server_restart_count: 0
+      mtp_mode_verified_for_g26_mtp: true
+  pilot:
+    command: python run.py --profile <selected_profile> --phase pilot
+    speed_scenarios: [S1, S2, S3]
+    warmup_requests: 2
+    measured_requests: 5
+    agent_tasks: 18
+    max_agent_turns: 4
+  core:
+    command: python run.py --profile <selected_profile> --phase core --confirm-go
+    speed_scenarios: [S1, S2, S3, S4]
+    warmup_requests: 5
+    measured_requests: 15
+    agent_tasks: 60
+    max_agent_turns: 6
+    requires_confirm_go: true
+  quant_calibration:
+    command: python run.py --profile q8_calibration --phase quant-calibration
+    requires:
+      - successful_core
+      - gpu_vram_at_least_48_gib
+  bfcl_lite:
+    command: python run.py --profile <selected_profile> --phase bfcl-lite --confirm-go
+    optional: true
+  repeat_speed:
+    command: python run.py --profile <selected_profile> --phase repeat-speed
+    speed_scenarios: [S2, S3, S4]
+    measured_requests: 10
+
+primary_comparison:
+  left: DG-Native
+  right: G26-MTP
+  attribution:
+    - G26-AR
+  allowed_final_statuses:
+    - PRIMARY_NATIVE_OPTIMIZED
+    - CONSTRAINED_NATIVE_OPTIMIZED

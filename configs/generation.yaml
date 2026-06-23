@@ -1,0 +1,33 @@
+generation:
+  temperature: 0
+  top_p: 1.0
+  top_k: 0
+  seed: 20260623
+  batch_size: 1
+  concurrency: 1
+  guided_decoding: false
+  response_format_enforcement: false
+  cpu_offload: false
+  kv_cache: enabled
+  kv_cache_quantization: false
+  thinking_mode: false
+  stop: []
+
+agent_protocol:
+  max_turns_core: 6
+  max_turns_pilot: 4
+  system_prompt: >-
+    You are a tool-using assistant. Return exactly one JSON object and no other
+    text. Do not provide explanations, reasoning, markdown, or code fences. Use
+    one tool call per turn when a tool is required.
+  allowed_response_shapes:
+    - '{"type":"tool_call","name":"tool_name","arguments":{"key":"value"}}'
+    - '{"type":"final","answer":"text"}'
+  forbidden:
+    - json_repair
+    - regex_json_extraction
+    - retry_after_parse_failure
+    - constrained_decoding_in_primary_score
+    - manual_argument_fixing
+    - model_specific_prompting
+    - hidden_reranking

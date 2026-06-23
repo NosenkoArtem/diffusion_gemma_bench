@@ -1,0 +1,39 @@
+{
+  "action": "STOP",
+  "backend_capability_matrix": {
+    "llama_cpp": "not_checked_in_local_preflight",
+    "mtp": "requires_colab_backend_gate",
+    "vllm": "not_checked_in_local_preflight"
+  },
+  "hardware": {
+    "disk_free_gib": 839.91,
+    "disk_total_gib": 952.85,
+    "gpu": {
+      "available": false
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.13 (main, Mar  3 2026, 15:01:35) [MSC v.1944 64 bit (AMD64)]"
+  },
+  "packages": {
+    "cuda_visible_devices": null,
+    "torch": null,
+    "vllm": null
+  },
+  "requested_profile": "auto",
+  "secrets": {
+    "HF_TOKEN": {
+      "present": false
+    },
+    "HUGGING_FACE_HUB_TOKEN": {
+      "present": false
+    },
+    "WANDB_API_KEY": {
+      "present": false
+    }
+  },
+  "selected_profile": null,
+  "status_reasons": [
+    "no_gpu_detected"
+  ],
+  "timestamp": "2026-06-23T14:54:44+00:00"
+}
