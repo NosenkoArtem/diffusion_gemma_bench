@@ -1,0 +1,57 @@
+{
+  "copied_files": [
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/preflight.json",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/environment.txt",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/run_manifest.json",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/summary_metrics.json",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/smoke_status.json",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/final_report.md",
+    "/content/diffusion_gemma_bench/results/runs/20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce/final_report.html"
+  ],
+  "git": {
+    "branch": "main",
+    "commit_sha": "3afe46ce47866b91d64fc42092bf84f88134f683",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "3afe46ce"
+  },
+  "packaged_at": "2026-06-23T22:01:42+00:00",
+  "phase": "smoke",
+  "profile": "q6_core_native",
+  "run_id": "20260623T214658_q6_core_native_smoke_unknown_gpu_3afe46ce",
+  "skipped_files": [
+    {
+      "path": "/content/diffusion_gemma_bench/results/model_artifacts.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_mtp_tuning.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_resource_summary.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_go_no_go.md",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_estimated_budget.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/bfcl_summary.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/BLOCKED_HARDWARE.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/BLOCKED_BACKEND.json",
+      "reason": "missing"
+    }
+  ],
+  "warnings": []
+}
