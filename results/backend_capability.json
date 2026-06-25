@@ -1,10 +1,10 @@
 {
   "git": {
     "branch": "main",
-    "commit_sha": "cede26db40c7290637b163d5ef658cd832813526",
+    "commit_sha": "720b85d77b8558de7909c8c49a6fd5e186a9f5fe",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "cede26db"
+    "short_commit_sha": "720b85d7"
   },
   "gpu": {
     "available": false
@@ -41,5 +41,5 @@
     "hf_token_missing"
   ],
   "status": "BACKEND_CHECK_NEEDS_SETUP",
-  "timestamp": "2026-06-25T19:23:50+00:00"
+  "timestamp": "2026-06-25T19:42:12+00:00"
 }
