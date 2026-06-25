@@ -1,0 +1,58 @@
+{
+  "copied_files": [
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/preflight.json",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/environment.txt",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/run_manifest.json",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/summary_metrics.json",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/smoke_status.json",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/backend_capability.json",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/final_report.md",
+    "/content/diffusion_gemma_bench/results/runs/20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab/final_report.html"
+  ],
+  "git": {
+    "branch": "main",
+    "commit_sha": "3098c1ab7c7993ca8f29937b232f2ecc2d154915",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "3098c1ab"
+  },
+  "packaged_at": "2026-06-25T21:23:08+00:00",
+  "phase": "backend-check",
+  "profile": "q6_core_native",
+  "run_id": "20260625T212131_q6_core_native_backend-check_unknown_gpu_3098c1ab",
+  "skipped_files": [
+    {
+      "path": "/content/diffusion_gemma_bench/results/model_artifacts.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_mtp_tuning.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_resource_summary.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_go_no_go.md",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/pilot_estimated_budget.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/bfcl_summary.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/BLOCKED_HARDWARE.json",
+      "reason": "missing"
+    },
+    {
+      "path": "/content/diffusion_gemma_bench/results/BLOCKED_BACKEND.json",
+      "reason": "missing"
+    }
+  ],
+  "warnings": []
+}

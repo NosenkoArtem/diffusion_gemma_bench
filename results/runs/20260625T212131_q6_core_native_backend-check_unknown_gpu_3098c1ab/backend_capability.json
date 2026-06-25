@@ -1,0 +1,46 @@
+{
+  "git": {
+    "branch": "main",
+    "commit_sha": "3098c1ab7c7993ca8f29937b232f2ecc2d154915",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "3098c1ab"
+  },
+  "gpu": {
+    "available": true,
+    "compute_capability": "12.0",
+    "free_vram_gib": 94.97,
+    "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "total_vram_gib": 95.59
+  },
+  "hf_access": {
+    "checked": false,
+    "reason": "hf_token_missing"
+  },
+  "hf_token": {
+    "present": false
+  },
+  "localhost": {
+    "detail": {
+      "free": true
+    },
+    "host": "127.0.0.1",
+    "port": 8000,
+    "port_free": true
+  },
+  "next_step": "Установить/проверить vLLM в Colab runtime перед запуском модельного smoke.",
+  "packages": {
+    "cuda_visible_devices": null,
+    "huggingface_hub": "1.19.0",
+    "requests": "2.32.4",
+    "torch": "2.11.0+cu128",
+    "vllm": null
+  },
+  "profile": "q6_core_native",
+  "reasons": [
+    "vllm_not_importable",
+    "hf_token_missing"
+  ],
+  "status": "BACKEND_CHECK_NEEDS_SETUP",
+  "timestamp": "2026-06-25T21:21:22+00:00"
+}
