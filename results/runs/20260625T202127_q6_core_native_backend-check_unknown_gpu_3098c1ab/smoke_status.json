@@ -1,0 +1,7 @@
+{
+  "phase": "smoke",
+  "profile": "q6_core_native",
+  "reason": "This scaffold does not fabricate model results. Run preflight in Colab, then implement/enable the vLLM capability gate before this phase.",
+  "run_id": "smoke-20260625T202117Z-f4170a",
+  "status": "PENDING_COLAB_BACKEND_GATE"
+}

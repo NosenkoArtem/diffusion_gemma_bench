@@ -1,0 +1,5 @@
+timestamp: 2026-06-25T20:21:16+00:00
+action: GO
+selected_profile: q6_core_native
+hardware: {'platform': 'Linux-6.6.122+-x86_64-with-glibc2.35', 'python': '3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]', 'gpu': {'available': True, 'name': 'NVIDIA RTX PRO 6000 Blackwell Server Edition', 'total_vram_gib': 95.59, 'free_vram_gib': 94.97, 'compute_capability': '12.0'}, 'disk_free_gib': 188.59, 'disk_total_gib': 235.68}
+packages: {'torch': '2.11.0+cu128', 'vllm': None, 'cuda_visible_devices': None}

@@ -1,0 +1,13 @@
+{
+  "git": {
+    "branch": "main",
+    "commit_sha": "3098c1ab7c7993ca8f29937b232f2ecc2d154915",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "3098c1ab"
+  },
+  "phase": "report",
+  "profile": "q6_core_native",
+  "run_id": "report-20260625T202117Z-fd6745",
+  "started_at": "2026-06-25T20:21:17+00:00"
+}

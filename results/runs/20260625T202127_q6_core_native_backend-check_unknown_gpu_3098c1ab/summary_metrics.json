@@ -1,0 +1,26 @@
+{
+  "agent_quality": {
+    "groups": []
+  },
+  "sections": [
+    "Executive summary",
+    "Hardware and runtime",
+    "Result status",
+    "Model artifacts and SHA256",
+    "Backend/version matrix",
+    "MTP configuration and tuning",
+    "Cold speed benchmark",
+    "Warm-agent benchmark",
+    "MiniToolAgent",
+    "G26-AR vs G26-MTP attribution",
+    "Quantization sensitivity",
+    "BFCL-lite",
+    "Failure modes",
+    "Limitations",
+    "Final conclusion",
+    "Reproduction commands"
+  ],
+  "speed": {
+    "groups": []
+  }
+}
