@@ -1,98 +1,146 @@
-# First Colab Experiment
+# Первый базовый эксперимент в Colab
 
-This first experiment is intentionally small. It proves that VS Code, the Colab
-kernel, GitHub checkout, local tests, result writing, result packaging, and
-optional result push all work before model weights or vLLM servers are involved.
+Этот эксперимент специально маленький. Он проверяет связку VS Code + Colab
+kernel + GitHub checkout + локальные тесты + запись результатов + упаковка
+результатов + опциональный push. Веса моделей и vLLM server пока не запускаются.
 
-## Goal
+## Цель
 
-Expected outcome:
+Ожидаемый результат:
 
-- repository clones from GitHub into `/content/diffusion_gemma_bench`;
-- the notebook prints the exact `CODE_COMMIT_SHA`;
-- unit tests pass;
-- `preflight` writes hardware/runtime metadata;
-- placeholder `smoke` writes `PENDING_COLAB_BACKEND_GATE`;
-- report generation writes `reports/final_report.md`;
-- small artifacts are packaged under `results/runs/<RUN_ID>/`;
-- optional push can commit that run directory to `bench-results`.
+- репозиторий клонируется из GitHub в `/content/diffusion_gemma_bench`;
+- notebook печатает точный `CODE_COMMIT_SHA`;
+- unit-тесты проходят;
+- `preflight` пишет hardware/runtime metadata;
+- `backend-check` пишет `results/backend_capability.json`;
+- placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
+- `report` создаёт `reports/final_report.md`;
+- маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
+- опциональный push коммитит run-директорию в `bench-results`.
 
-This is not yet a model benchmark. It is the integration smoke test before the
-real vLLM capability gate.
+Это ещё не benchmark моделей. Это интеграционный smoke перед настоящим vLLM
+capability gate.
 
-## One-Time GitHub Setup
+## Разовая настройка GitHub
 
-1. Create a GitHub repository for the code.
-2. Push the local repository to `main`.
-3. Keep large outputs out of `main`.
-4. Use `bench-results` for small, reviewable result artifacts.
+1. Держи код в ветке `main`.
+2. Большие результаты, веса и логи не пушь в `main`.
+3. Для маленьких reviewable-результатов используй ветку `bench-results`.
+4. Если токен GitHub был напечатан в notebook output или чате, отзови его и
+   создай новый.
 
-Recommended branch policy:
+## Переменные и секреты
 
-- `main`: source code, configs, tests, notebook, docs.
-- `bench-results`: packaged result runs under `results/runs/<RUN_ID>/`.
+Единый список имён хранится в `configs/experiment.env.example`.
 
-## VS Code + Colab Kernel Run
+Создай:
 
-1. Open `notebooks/01_colab_runner.ipynb` in VS Code.
-2. Select a Google Colab kernel.
-3. In the first code cell, set:
+- `HF_TOKEN`: Hugging Face read token. Он нужен для проверки доступа к model
+  repos и следующих модельных smoke-тестов. Токен должен иметь доступ к gated
+  репозиториям, если Hugging Face требует acceptance.
+- `GITHUB_TOKEN`: GitHub token для push packaged results в `bench-results`.
+  Нужен только если push выполняется из Colab.
+
+Не коммить реальные значения токенов. Для локального запуска можно скопировать:
+
+```bash
+cp configs/experiment.env.example configs/experiment.env
+```
+
+и заполнить `configs/experiment.env`; этот файл игнорируется git. В Colab лучше
+использовать Secrets с теми же именами: `HF_TOKEN`, `GITHUB_TOKEN`.
+
+Если ты запускаешь Colab через расширение VS Code и Colab Secrets недоступны,
+notebook спросит `HF_TOKEN` через скрытый `getpass`-ввод. Значение попадёт только
+в `os.environ` текущего runtime. Для GitHub push можно включить:
+
+```python
+EXPERIMENT["PROMPT_FOR_GITHUB_TOKEN"] = "1"
+```
+
+или заранее задать `GITHUB_TOKEN` в окружении runtime.
+
+Рекомендуемая схема веток:
+
+- `main`: код, конфиги, тесты, notebook, документация.
+- `bench-results`: packaged run-и под `results/runs/<RUN_ID>/`.
+
+## Запуск из VS Code + Colab Kernel
+
+1. Открой `notebooks/01_colab_runner.ipynb` в VS Code.
+2. Выбери Google Colab kernel.
+3. В первой code cell задай:
 
    ```python
-   REPO_URL = "https://github.com/<owner>/diffusion_gemma_bench.git"
-   CODE_BRANCH = "main"
-   RESULTS_BRANCH = "bench-results"
-   PROFILE = "q6_core_native"
-   PHASE = "smoke"
+   EXPERIMENT = {
+       "REPO_URL": "https://github.com/<owner>/diffusion_gemma_bench.git",
+       "CODE_BRANCH": "main",
+       "RESULTS_BRANCH": "bench-results",
+       "PROFILE": "q6_core_native",
+       "PHASE": "backend-check",
+       "PROJECT_DIR": "/content/diffusion_gemma_bench",
+       "VLLM_HOST": "127.0.0.1",
+       "VLLM_PORT": "8000",
+       "PROMPT_FOR_HF_TOKEN": "1",
+       "PROMPT_FOR_GITHUB_TOKEN": "0",
+   }
    ```
 
-4. Run all cells through "Package Result Run".
-5. Confirm:
+4. Запусти ячейки до упаковки результата.
+5. Проверь:
 
-   - `unittest` passes;
-   - `preflight.json` includes a GPU summary;
-   - `run_manifest.json` includes `git.commit_sha`;
-   - `smoke_status.json` is `PENDING_COLAB_BACKEND_GATE`;
-   - `validation.ok` is `True`.
+   - `unittest` прошёл;
+   - `preflight.json` содержит GPU summary;
+   - `backend_capability.json` создан;
+   - `run_manifest.json` содержит `git.commit_sha`;
+   - `smoke_status.json` равен `PENDING_COLAB_BACKEND_GATE`;
+   - `validation.ok` равен `True`.
 
-## Optional Result Push
+## Push результатов
 
-Only after inspecting the packaged result directory:
+Включай push только после просмотра packaged run-директории.
 
-1. Authenticate GitHub inside the Colab runtime.
-2. Set:
+1. Задай `GITHUB_TOKEN` через Colab secrets или переменную окружения runtime.
+2. Не вставляй token-backed URL в notebook cell.
+3. Установи:
 
    ```python
    PUSH_RESULTS = True
    ```
 
-3. Run the final notebook cell.
+4. Запусти финальную ячейку.
 
-The push script validates files before commit. It rejects model weights, zip
-files, large files, logs, and secret-looking tokens.
+Push-скрипт валидирует файлы перед commit. Он отклоняет веса моделей, zip-файлы,
+большие файлы, логи и строки, похожие на секреты.
 
-For private repositories, avoid printing tokens. Prefer Colab secrets or an
-interactive GitHub authentication method. Do not commit notebook outputs that
-contain authentication details.
+Для приватных репозиториев не печатай токены. Не коммить notebook outputs с
+авторизационными данными.
 
-## Expected First Status
+## Ожидаемые статусы
 
-The first smoke status should be:
+`smoke_status.json` пока должен быть:
 
 ```text
 PENDING_COLAB_BACKEND_GATE
 ```
 
-That means the code path works, but model smoke tests are still blocked by the
-next implementation step: vLLM capability gate and model artifact checks.
+Это значит, что путь кода работает, но модельный smoke ещё заблокирован следующим
+инженерным этапом.
 
-## Next Engineering Step
+`backend_capability.json` может вернуть `BACKEND_CHECK_NEEDS_SETUP`, если:
 
-After this integration smoke passes, implement:
+- `vllm` ещё не установлен;
+- `HF_TOKEN` ещё не задан;
+- доступ к gated Hugging Face repos не подтверждён.
 
-1. vLLM install/version check.
-2. Hugging Face access check without logging `HF_TOKEN`.
-3. backend health endpoint check on `127.0.0.1`.
-4. streaming response check.
-5. strict JSON/tool prompt check.
-6. MTP startup verification for `G26-MTP`.
+## Следующий инженерный этап
+
+После этого интеграционного smoke нужно реализовать:
+
+1. установку/проверку vLLM;
+2. проверку Hugging Face access без логирования `HF_TOKEN`;
+3. запуск лёгкого OpenAI-compatible server на `127.0.0.1`;
+4. health endpoint;
+5. streaming TTFC check;
+6. strict JSON/tool prompt check;
+7. затем уже модельный smoke для `DG-Native`, `G26-AR`, `G26-MTP`.

@@ -16,8 +16,10 @@ class ManifestTests(unittest.TestCase):
             "configs/generation.yaml",
             "configs/mtp.yaml",
             "configs/benchmark_manifest.yaml",
+            "configs/experiment.env.example",
             "data/speed_prompts.jsonl",
             "data/minitoolagent_v1.jsonl",
+            "docs/first_colab_experiment.md",
             "run.py",
         ]:
             self.assertTrue(project_path(*rel.split("/")).exists(), rel)

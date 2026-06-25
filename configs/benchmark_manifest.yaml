@@ -4,10 +4,25 @@ phases:
     writes:
       - results/preflight.json
       - results/environment.txt
+  backend_check:
+    command: python run.py --profile <selected_profile> --phase backend-check
+    requires:
+      - preflight
+    writes:
+      - results/backend_capability.json
+    checks:
+      - gpu_visible
+      - torch_importable
+      - vllm_importable
+      - huggingface_hub_importable
+      - hf_token_present
+      - model_repo_metadata_access
+      - localhost_port_free
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
       - preflight
+      - backend_check
     models: [DG-Native, G26-AR, G26-MTP]
     success_gates:
       model_load_success: true

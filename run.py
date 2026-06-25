@@ -14,6 +14,7 @@ from typing import Any
 
 from src.bootstrap import start_phase
 from src.bfcl_runner import run_bfcl_lite
+from src.backend_check import run_backend_check
 from src.preflight import run_preflight
 from src.reporting import generate_report
 from src.utils import RESULTS_DIR, append_jsonl, project_path, write_json
@@ -21,6 +22,7 @@ from src.utils import RESULTS_DIR, append_jsonl, project_path, write_json
 
 PHASES = {
     "preflight",
+    "backend-check",
     "smoke",
     "pilot",
     "core",
@@ -47,6 +49,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "preflight":
         result = run_preflight(args.profile)
         print_summary(result)
+        return 0
+
+    if args.phase == "backend-check":
+        result = run_backend_check(args.profile)
+        print_backend_check_summary(result)
         return 0
 
     if args.phase == "report":
@@ -105,6 +112,18 @@ def print_summary(result: dict[str, Any]) -> None:
     print(f"status_reasons: {result['status_reasons']}")
     print(f"gpu: {result['hardware']['gpu']}")
     print(f"disk_free_gib: {result['hardware']['disk_free_gib']}")
+
+
+def print_backend_check_summary(result: dict[str, Any]) -> None:
+    """Compact backend-check summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"reasons: {result['reasons']}")
+    print(f"gpu: {result['gpu']}")
+    print(f"packages: {result['packages']}")
+    print(f"hf_token_present: {result['hf_token']['present']}")
+    print(f"localhost_port_free: {result['localhost']['port_free']}")
+    print(f"next_step: {result['next_step']}")
 
 
 if __name__ == "__main__":

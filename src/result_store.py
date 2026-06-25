@@ -43,6 +43,7 @@ ALLOWED_ROOT_RESULTS = (
     "pilot_go_no_go.md",
     "pilot_estimated_budget.json",
     "bfcl_summary.json",
+    "backend_capability.json",
     "BLOCKED_HARDWARE.json",
     "BLOCKED_BACKEND.json",
 )

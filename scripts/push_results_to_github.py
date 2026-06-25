@@ -9,6 +9,7 @@ in the remote URL.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -72,7 +73,7 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
     state. A temporary checkout keeps the source tree untouched.
     """
 
-    remote_url = git(["remote", "get-url", remote])
+    remote_url = authenticated_remote_url(git(["remote", "get-url", remote]))
     user_name = git(["config", "user.name"], check=False) or "Colab Benchmark Bot"
     user_email = git(["config", "user.email"], check=False) or "colab-benchmark@example.invalid"
     rel_run_dir = run_dir.relative_to(ROOT)
@@ -111,6 +112,15 @@ def git(args: list[str], check: bool = True) -> str:
     if check and proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip() or proc.stdout.strip())
     return proc.stdout.strip()
+
+
+def authenticated_remote_url(remote_url: str) -> str:
+    """Inject `GITHUB_TOKEN` into an HTTPS URL without printing or persisting it."""
+
+    token = os.environ.get("GITHUB_TOKEN")
+    if not token or not remote_url.startswith("https://github.com/"):
+        return remote_url
+    return remote_url.replace("https://", f"https://x-access-token:{token}@", 1)
 
 
 def git_in(cwd: Path, args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:

@@ -34,6 +34,7 @@ after preflight confirms hardware, backend, model access, and MTP capability.
 
 ```bash
 python run.py --profile auto --phase preflight
+python run.py --profile auto --phase backend-check
 python run.py --profile q6_core_native --phase smoke
 python run.py --profile q6_core_native --phase pilot
 python run.py --profile q6_core_native --phase core --confirm-go
@@ -64,6 +65,15 @@ unittest.TextTestRunner(verbosity=2).run(suite)
 
 This is the preferred first integration test before downloading model weights.
 The full checklist lives in `docs/first_colab_experiment.md`.
+
+Before backend/model checks, create these secrets outside git:
+
+- `HF_TOKEN`: Hugging Face read token with access to the required model repos.
+- `GITHUB_TOKEN`: GitHub token only if Colab must push packaged result runs.
+
+Variable names and non-secret defaults are documented in
+`configs/experiment.env.example`. If you need a local file, copy it to
+`configs/experiment.env`; that file is ignored by git.
 
 1. Push this repository to GitHub.
 2. In VS Code, open `notebooks/01_colab_runner.ipynb`.

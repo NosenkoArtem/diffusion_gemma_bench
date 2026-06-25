@@ -13,3 +13,5 @@ results/*_raw.jsonl
 results/runs/
 reports/figures/*
 dist/*.zip
+configs/experiment.env
+.env
