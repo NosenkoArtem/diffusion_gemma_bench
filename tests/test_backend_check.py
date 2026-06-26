@@ -36,6 +36,14 @@ class BackendCheckTests(unittest.TestCase):
                 "https://x-access-token:token-value@github.com/o/r.git",
             )
             self.assertEqual(
+                authenticated_remote_url("https://old-token@github.com/o/r.git"),
+                "https://x-access-token:token-value@github.com/o/r.git",
+            )
+            self.assertEqual(
+                authenticated_remote_url("https://x-access-token:old-token@github.com/o/r.git"),
+                "https://x-access-token:token-value@github.com/o/r.git",
+            )
+            self.assertEqual(
                 authenticated_remote_url("git@github.com:o/r.git"),
                 "git@github.com:o/r.git",
             )
@@ -52,6 +60,10 @@ class BackendCheckTests(unittest.TestCase):
         os.environ["GITHUB_TOKEN"] = "token-value"
         try:
             self.assertEqual(redact_secret("bad token-value error"), "bad *** error")
+            self.assertEqual(
+                redact_secret("fatal: could not read Password for 'https://token-value@github.com'"),
+                "fatal: could not read Password for 'https://***@github.com'",
+            )
         finally:
             if old is None:
                 os.environ.pop("GITHUB_TOKEN", None)
@@ -60,9 +72,11 @@ class BackendCheckTests(unittest.TestCase):
 
     def test_remote_type_and_token_requirement(self):
         self.assertEqual(remote_type("https://github.com/o/r.git"), "github_https")
+        self.assertEqual(remote_type("https://old-token@github.com/o/r.git"), "github_https")
         self.assertEqual(remote_type("git@github.com:o/r.git"), "github_ssh")
         self.assertEqual(remote_type("https://example.com/o/r.git"), "other")
         self.assertTrue(needs_github_token("https://github.com/o/r.git"))
+        self.assertTrue(needs_github_token("https://old-token@github.com/o/r.git"))
         self.assertFalse(needs_github_token("git@github.com:o/r.git"))
 
 

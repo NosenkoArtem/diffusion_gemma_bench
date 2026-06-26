@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -157,13 +159,14 @@ def check_push_auth(remote: str, branch: str) -> None:
 def needs_github_token(remote_url: str) -> bool:
     """Return True for GitHub HTTPS remotes that need token injection in Colab."""
 
-    return remote_url.startswith("https://github.com/")
+    parsed = urlsplit(remote_url)
+    return parsed.scheme == "https" and parsed.hostname == "github.com"
 
 
 def remote_type(remote_url: str) -> str:
     """Classify the remote URL for safe diagnostics."""
 
-    if remote_url.startswith("https://github.com/"):
+    if needs_github_token(remote_url):
         return "github_https"
     if remote_url.startswith("git@github.com:"):
         return "github_ssh"
@@ -171,12 +174,20 @@ def remote_type(remote_url: str) -> str:
 
 
 def authenticated_remote_url(remote_url: str) -> str:
-    """Inject `GITHUB_TOKEN` into an HTTPS URL without printing or persisting it."""
+    """Return a GitHub HTTPS URL authenticated with `GITHUB_TOKEN`.
+
+    Colab clones may leave `origin` as either `https://github.com/...` or as a
+    URL that already contains incomplete credentials, for example
+    `https://TOKEN@github.com/...`. Git push treats the latter as username-only
+    auth and then prompts for a password, which fails in notebook runtimes.
+    Normalizing the netloc here keeps token handling in one temporary remote.
+    """
 
     token = os.environ.get("GITHUB_TOKEN")
-    if not token or not remote_url.startswith("https://github.com/"):
+    if not token or not needs_github_token(remote_url):
         return remote_url
-    return remote_url.replace("https://", f"https://x-access-token:{token}@", 1)
+    parsed = urlsplit(remote_url)
+    return urlunsplit((parsed.scheme, f"x-access-token:{token}@github.com", parsed.path, parsed.query, parsed.fragment))
 
 
 def git_in(cwd: Path, args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -201,6 +212,7 @@ def redact_secret(text: str) -> str:
     token = os.environ.get("GITHUB_TOKEN")
     if token:
         text = text.replace(token, "***")
+    text = re.sub(r"https://[^/@\s]+@github\.com", "https://***@github.com", text)
     return text
 
 
