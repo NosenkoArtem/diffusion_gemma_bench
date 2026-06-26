@@ -37,6 +37,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.push:
+        require_push_auth(args.remote)
     commit_sha = git(["rev-parse", "HEAD"], check=False)
     run_id = args.run_id or make_run_id(args.profile, args.phase, commit_sha=commit_sha)
     manifest = package_results(run_id=run_id, profile=args.profile, phase=args.phase)
@@ -86,8 +88,9 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
         git_in(temp_repo, ["config", "user.email", user_email])
         git_in(temp_repo, ["remote", "add", remote, remote_url])
 
-        fetch = git_in(temp_repo, ["fetch", "--depth", "1", remote, branch], check=False)
-        if fetch.returncode == 0:
+        branch_exists = remote_branch_exists(temp_repo, remote, branch)
+        if branch_exists:
+            git_in(temp_repo, ["fetch", "--depth", "1", remote, branch])
             git_in(temp_repo, ["checkout", "-B", branch, "FETCH_HEAD"])
         else:
             git_in(temp_repo, ["checkout", "--orphan", branch])
@@ -110,8 +113,19 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
 def git(args: list[str], check: bool = True) -> str:
     proc = subprocess.run(["git", *args], cwd=ROOT, text=True, capture_output=True)
     if check and proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip())
+        raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
     return proc.stdout.strip()
+
+
+def require_push_auth(remote: str) -> None:
+    """Fail early when a GitHub HTTPS push has no token available."""
+
+    remote_url = git(["remote", "get-url", remote])
+    if remote_url.startswith("https://github.com/") and not os.environ.get("GITHUB_TOKEN"):
+        raise RuntimeError(
+            "GITHUB_TOKEN is required for pushing results to GitHub from Colab. "
+            "Load it into os.environ from /content/experiment.env before running this script."
+        )
 
 
 def authenticated_remote_url(remote_url: str) -> str:
@@ -126,8 +140,26 @@ def authenticated_remote_url(remote_url: str) -> str:
 def git_in(cwd: Path, args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     proc = subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True)
     if check and proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip() or proc.stdout.strip())
+        raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
     return proc
+
+
+def remote_branch_exists(cwd: Path, remote: str, branch: str) -> bool:
+    """Return True if the results branch exists; raise on auth/network errors."""
+
+    proc = git_in(cwd, ["ls-remote", "--heads", remote, branch], check=False)
+    if proc.returncode != 0:
+        raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
+    return bool(proc.stdout.strip())
+
+
+def redact_secret(text: str) -> str:
+    """Remove token-like substrings from git error text."""
+
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        text = text.replace(token, "***")
+    return text
 
 
 if __name__ == "__main__":

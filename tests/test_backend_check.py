@@ -3,7 +3,7 @@ import unittest
 
 from src.backend_check import check_tcp_port_free, next_step_from_reasons, run_backend_check
 from src.utils import project_path
-from scripts.push_results_to_github import authenticated_remote_url
+from scripts.push_results_to_github import authenticated_remote_url, redact_secret, require_push_auth
 
 
 class BackendCheckTests(unittest.TestCase):
@@ -39,6 +39,19 @@ class BackendCheckTests(unittest.TestCase):
                 authenticated_remote_url("git@github.com:o/r.git"),
                 "git@github.com:o/r.git",
             )
+        finally:
+            if old is None:
+                os.environ.pop("GITHUB_TOKEN", None)
+            else:
+                os.environ["GITHUB_TOKEN"] = old
+
+    def test_redact_secret_removes_token_from_errors(self):
+        import os
+
+        old = os.environ.get("GITHUB_TOKEN")
+        os.environ["GITHUB_TOKEN"] = "token-value"
+        try:
+            self.assertEqual(redact_secret("bad token-value error"), "bad *** error")
         finally:
             if old is None:
                 os.environ.pop("GITHUB_TOKEN", None)
