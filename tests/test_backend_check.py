@@ -3,7 +3,7 @@ import unittest
 
 from src.backend_check import check_tcp_port_free, next_step_from_reasons, run_backend_check
 from src.utils import project_path
-from scripts.push_results_to_github import authenticated_remote_url, redact_secret, require_push_auth
+from scripts.push_results_to_github import authenticated_remote_url, needs_github_token, redact_secret, remote_type
 
 
 class BackendCheckTests(unittest.TestCase):
@@ -57,6 +57,13 @@ class BackendCheckTests(unittest.TestCase):
                 os.environ.pop("GITHUB_TOKEN", None)
             else:
                 os.environ["GITHUB_TOKEN"] = old
+
+    def test_remote_type_and_token_requirement(self):
+        self.assertEqual(remote_type("https://github.com/o/r.git"), "github_https")
+        self.assertEqual(remote_type("git@github.com:o/r.git"), "github_ssh")
+        self.assertEqual(remote_type("https://example.com/o/r.git"), "other")
+        self.assertTrue(needs_github_token("https://github.com/o/r.git"))
+        self.assertFalse(needs_github_token("git@github.com:o/r.git"))
 
 
 if __name__ == "__main__":

@@ -52,15 +52,18 @@ cp configs/experiment.env.example configs/experiment.env
 
 ```bash
 python scripts/check_no_secrets.py
-``` В Colab лучше
-использовать Secrets с теми же именами: `HF_TOKEN`, `GITHUB_TOKEN`.
+```
+
+В обычном Colab можно использовать Secrets с теми же именами: `HF_TOKEN`,
+`GITHUB_TOKEN`. В VS Code Colab extension этот путь может быть недоступен.
 
 Если ты запускаешь Colab через расширение VS Code и Colab Secrets недоступны,
 используй `.env`-файл. Важно: локальный `configs/experiment.env` на Windows
 не виден удалённому Colab runtime автоматически. Есть два рабочих варианта:
 
 1. Вставить содержимое env-файла в опциональную ячейку `0a`, чтобы она создала
-   `/content/experiment.env`, затем сразу очистить `ENV_TEXT` перед commit.
+   `/content/experiment.env`, затем сразу очистить `ENV_TEXT` перед сохранением
+   notebook или commit.
 2. Любым доступным способом загрузить файл в runtime как `/content/experiment.env`.
 
 Значения попадут только в `os.environ` текущего runtime и не печатаются.
@@ -104,7 +107,9 @@ python scripts/check_no_secrets.py
 
 Включай push только после просмотра packaged run-директории.
 
-1. Задай `GITHUB_TOKEN` через Colab secrets или переменную окружения runtime.
+1. Убедись, что `GITHUB_TOKEN` загружен в runtime: ячейка настроек должна показать
+   `GITHUB_TOKEN_present: True`. Для VS Code Colab extension обычно это делается
+   через `/content/experiment.env`.
 2. Не вставляй token-backed URL в notebook cell.
 3. Установи:
 
@@ -112,7 +117,8 @@ python scripts/check_no_secrets.py
    PUSH_RESULTS = True
    ```
 
-4. Запусти финальную ячейку.
+4. Запусти финальную ячейку. Она сначала выполнит `--auth-check`, и только после
+   успешной проверки создаст commit и push в `bench-results`.
 
 Push-скрипт валидирует файлы перед commit. Он отклоняет веса моделей, zip-файлы,
 большие файлы, логи и строки, похожие на секреты.

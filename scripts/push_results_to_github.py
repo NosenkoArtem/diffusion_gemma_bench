@@ -32,11 +32,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--remote", default="origin")
     parser.add_argument("--commit", action="store_true", help="Create a local git commit for the packaged run.")
     parser.add_argument("--push", action="store_true", help="Push the commit to the result branch.")
+    parser.add_argument(
+        "--auth-check",
+        action="store_true",
+        help="Check GitHub push authentication and remote branch visibility without packaging results.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.auth_check:
+        check_push_auth(args.remote, args.branch)
+        return 0
     if args.push:
         require_push_auth(args.remote)
     commit_sha = git(["rev-parse", "HEAD"], check=False)
@@ -121,11 +129,45 @@ def require_push_auth(remote: str) -> None:
     """Fail early when a GitHub HTTPS push has no token available."""
 
     remote_url = git(["remote", "get-url", remote])
-    if remote_url.startswith("https://github.com/") and not os.environ.get("GITHUB_TOKEN"):
+    if needs_github_token(remote_url) and not os.environ.get("GITHUB_TOKEN"):
         raise RuntimeError(
             "GITHUB_TOKEN is required for pushing results to GitHub from Colab. "
             "Load it into os.environ from /content/experiment.env before running this script."
         )
+
+
+def check_push_auth(remote: str, branch: str) -> None:
+    """Print a safe GitHub auth diagnostic without exposing token values."""
+
+    remote_url = git(["remote", "get-url", remote])
+    require_push_auth(remote)
+    probe_url = authenticated_remote_url(remote_url)
+    proc = subprocess.run(["git", "ls-remote", "--heads", probe_url, branch], cwd=ROOT, text=True, capture_output=True)
+    if proc.returncode != 0:
+        raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
+
+    print(f"remote: {remote}")
+    print(f"remote_type: {remote_type(remote_url)}")
+    print(f"github_token_present: {bool(os.environ.get('GITHUB_TOKEN'))}")
+    print(f"branch: {branch}")
+    print(f"branch_exists: {bool(proc.stdout.strip())}")
+    print("auth_ok: True")
+
+
+def needs_github_token(remote_url: str) -> bool:
+    """Return True for GitHub HTTPS remotes that need token injection in Colab."""
+
+    return remote_url.startswith("https://github.com/")
+
+
+def remote_type(remote_url: str) -> str:
+    """Classify the remote URL for safe diagnostics."""
+
+    if remote_url.startswith("https://github.com/"):
+        return "github_https"
+    if remote_url.startswith("git@github.com:"):
+        return "github_ssh"
+    return "other"
 
 
 def authenticated_remote_url(remote_url: str) -> str:

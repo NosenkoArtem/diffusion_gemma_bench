@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".ipynb_checkpoints", "dist", "results"}
+SKIP_FILES = {"configs/experiment.env", "experiment.env", ".env"}
 CHECK_SUFFIXES = {".py", ".md", ".ipynb", ".json", ".yaml", ".yml", ".txt", ".example"}
 SECRET_PATTERNS = {
     "huggingface_token": re.compile(r"hf_[A-Za-z0-9]{20,}"),
@@ -27,6 +28,8 @@ def iter_files() -> list[Path]:
             continue
         rel = path.relative_to(ROOT)
         if any(part in SKIP_DIRS for part in rel.parts):
+            continue
+        if rel.as_posix() in SKIP_FILES:
             continue
         if path.suffix in CHECK_SUFFIXES or path.name in {".env", ".gitignore"}:
             files.append(path)
