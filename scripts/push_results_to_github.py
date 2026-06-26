@@ -24,6 +24,8 @@ if str(ROOT) not in sys.path:
 
 from src.result_store import make_run_id, package_results, validate_result_tree  # noqa: E402
 
+PUSH_SCRIPT_VERSION = "2026-06-26-direct-url-push"
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Package and push small benchmark result artifacts.")
@@ -85,7 +87,8 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
     state. A temporary checkout keeps the source tree untouched.
     """
 
-    remote_url = authenticated_remote_url(git(["remote", "get-url", remote]))
+    source_remote_url = git(["remote", "get-url", remote])
+    remote_url = authenticated_remote_url(source_remote_url)
     user_name = git(["config", "user.name"], check=False) or "Colab Benchmark Bot"
     user_email = git(["config", "user.email"], check=False) or "colab-benchmark@example.invalid"
     rel_run_dir = run_dir.relative_to(ROOT)
@@ -96,11 +99,12 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
         git_in(temp_repo, ["init"])
         git_in(temp_repo, ["config", "user.name", user_name])
         git_in(temp_repo, ["config", "user.email", user_email])
-        git_in(temp_repo, ["remote", "add", remote, remote_url])
 
-        branch_exists = remote_branch_exists(temp_repo, remote, branch)
+        print(f"push_script_version: {PUSH_SCRIPT_VERSION}")
+        print(f"push_remote_type: {remote_type(source_remote_url)}")
+        branch_exists = remote_branch_exists(temp_repo, remote_url, branch)
         if branch_exists:
-            git_in(temp_repo, ["fetch", "--depth", "1", remote, branch])
+            git_in(temp_repo, ["fetch", "--depth", "1", remote_url, branch])
             git_in(temp_repo, ["checkout", "-B", branch, "FETCH_HEAD"])
         else:
             git_in(temp_repo, ["checkout", "--orphan", branch])
@@ -117,7 +121,7 @@ def commit_results_in_temp_repo(run_dir: Path, branch: str, remote: str, run_id:
             return
         git_in(temp_repo, ["commit", "-m", f"Add benchmark results {run_id}"])
         if push:
-            git_in(temp_repo, ["push", remote, f"HEAD:{branch}"])
+            git_in(temp_repo, ["push", remote_url, f"HEAD:{branch}"])
 
 
 def git(args: list[str], check: bool = True) -> str:
@@ -149,6 +153,7 @@ def check_push_auth(remote: str, branch: str) -> None:
         raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
 
     print(f"remote: {remote}")
+    print(f"push_script_version: {PUSH_SCRIPT_VERSION}")
     print(f"remote_type: {remote_type(remote_url)}")
     print(f"github_token_present: {bool(os.environ.get('GITHUB_TOKEN'))}")
     print(f"branch: {branch}")
@@ -197,10 +202,10 @@ def git_in(cwd: Path, args: list[str], check: bool = True) -> subprocess.Complet
     return proc
 
 
-def remote_branch_exists(cwd: Path, remote: str, branch: str) -> bool:
+def remote_branch_exists(cwd: Path, remote_url: str, branch: str) -> bool:
     """Return True if the results branch exists; raise on auth/network errors."""
 
-    proc = git_in(cwd, ["ls-remote", "--heads", remote, branch], check=False)
+    proc = git_in(cwd, ["ls-remote", "--heads", remote_url, branch], check=False)
     if proc.returncode != 0:
         raise RuntimeError(redact_secret(proc.stderr.strip() or proc.stdout.strip()))
     return bool(proc.stdout.strip())
