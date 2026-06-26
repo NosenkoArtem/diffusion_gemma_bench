@@ -2,7 +2,8 @@
 
 Этот эксперимент специально маленький. Он проверяет связку VS Code + Colab
 kernel + GitHub checkout + локальные тесты + запись результатов + упаковка
-результатов + опциональный push. Веса моделей и vLLM server пока не запускаются.
+результатов + сохранение результата в Google Drive. Веса моделей и vLLM server
+пока не запускаются.
 
 ## Цель
 
@@ -17,7 +18,8 @@ kernel + GitHub checkout + локальные тесты + запись резу
 - placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
 - `report` создаёт `reports/final_report.md`;
 - маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
-- опциональный push коммитит run-директорию в `bench-results`.
+- run-директория и zip-копия сохранены в Google Drive:
+  `MyDrive/diffusion_gemma_bench_results/<RUN_ID>`.
 
 Это ещё не benchmark моделей. Это интеграционный smoke перед настоящим vLLM
 capability gate.
@@ -26,9 +28,8 @@ capability gate.
 
 1. Держи код в ветке `main`.
 2. Большие результаты, веса и логи не пушь в `main`.
-3. Для маленьких reviewable-результатов используй ветку `bench-results`.
-4. Если токен GitHub был напечатан в notebook output или чате, отзови его и
-   создай новый.
+3. GitHub используется для кода и воспроизводимого `CODE_COMMIT_SHA`.
+4. Результаты экспериментов сохраняются отдельно в Google Drive.
 
 ## Переменные и секреты
 
@@ -39,9 +40,6 @@ capability gate.
 - `HF_TOKEN`: Hugging Face read token. Он нужен для проверки доступа к model
   repos и следующих модельных smoke-тестов. Токен должен иметь доступ к gated
   репозиториям, если Hugging Face требует acceptance.
-- `GITHUB_TOKEN`: GitHub token для push packaged results в `bench-results`.
-  Нужен только если push выполняется из Colab.
-
 Не коммить реальные значения токенов. Для локального запуска можно скопировать:
 
 ```bash
@@ -54,8 +52,8 @@ cp configs/experiment.env.example configs/experiment.env
 python scripts/check_no_secrets.py
 ```
 
-В обычном Colab можно использовать Secrets с теми же именами: `HF_TOKEN`,
-`GITHUB_TOKEN`. В VS Code Colab extension этот путь может быть недоступен.
+В обычном Colab можно использовать Secrets с тем же именем: `HF_TOKEN`.
+В VS Code Colab extension этот путь может быть недоступен.
 
 Если ты запускаешь Colab через расширение VS Code и Colab Secrets недоступны,
 используй `.env`-файл. Важно: локальный `configs/experiment.env` на Windows
@@ -68,10 +66,11 @@ python scripts/check_no_secrets.py
 
 Значения попадут только в `os.environ` текущего runtime и не печатаются.
 
-Рекомендуемая схема веток:
+Рекомендуемая схема хранения:
 
-- `main`: код, конфиги, тесты, notebook, документация.
-- `bench-results`: packaged run-и под `results/runs/<RUN_ID>/`.
+- GitHub `main`: код, конфиги, тесты, notebook, документация.
+- Google Drive: packaged run-и под
+  `MyDrive/diffusion_gemma_bench_results/<RUN_ID>/` и zip-копии.
 
 ## Запуск из VS Code + Colab Kernel
 
@@ -103,28 +102,22 @@ python scripts/check_no_secrets.py
    - `smoke_status.json` равен `PENDING_COLAB_BACKEND_GATE`;
    - `validation.ok` равен `True`.
 
-## Push результатов
+## Сохранение результатов
 
-Включай push только после просмотра packaged run-директории.
+После просмотра packaged run-директории запусти финальную ячейку notebook.
 
-1. Убедись, что `GITHUB_TOKEN` загружен в runtime: ячейка настроек должна показать
-   `GITHUB_TOKEN_present: True`. Для VS Code Colab extension обычно это делается
-   через `/content/experiment.env`.
-2. Не вставляй token-backed URL в notebook cell.
-3. Установи:
+Она:
 
-   ```python
-   PUSH_RESULTS = True
-   ```
+- монтирует Google Drive через `google.colab.drive`;
+- копирует `results/runs/<RUN_ID>/` в
+  `MyDrive/diffusion_gemma_bench_results/<RUN_ID>/`;
+- создаёт zip рядом с этой директорией.
 
-4. Запусти финальную ячейку. Она сначала выполнит `--auth-check`, и только после
-   успешной проверки создаст commit и push в `bench-results`.
+Если Google Drive недоступен, notebook сохранит копию локально в
+`/content/diffusion_gemma_bench_results/`, чтобы run не потерялся в текущей
+сессии.
 
-Push-скрипт валидирует файлы перед commit. Он отклоняет веса моделей, zip-файлы,
-большие файлы, логи и строки, похожие на секреты.
-
-Для приватных репозиториев не печатай токены. Не коммить notebook outputs с
-авторизационными данными.
+Перед commit не сохраняй notebook outputs с авторизационными данными.
 
 ## Ожидаемые статусы
 
