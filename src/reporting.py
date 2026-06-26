@@ -62,6 +62,8 @@ def render_markdown(summary: dict[str, Any]) -> str:
             lines.append(f"Speed groups available: {len(summary['speed']['groups'])}.")
         elif section == "MiniToolAgent":
             lines.append(f"Agent quality groups available: {len(summary['agent_quality']['groups'])}.")
+        elif section == "Backend/version matrix":
+            lines.append("See `results/backend_capability.json` and `results/backend_server_smoke.json` when available.")
         else:
             lines.append("Pending data from the corresponding phase.")
         lines.append("")

@@ -13,6 +13,7 @@ kernel + GitHub checkout + локальные тесты + запись резу
 - unit-тесты проходят;
 - `preflight` пишет hardware/runtime metadata;
 - `backend-check` пишет `results/backend_capability.json`;
+- `backend-smoke` пишет `results/backend_server_smoke.json`;
 - placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
 - `report` создаёт `reports/final_report.md`;
 - маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
@@ -47,18 +48,22 @@ capability gate.
 cp configs/experiment.env.example configs/experiment.env
 ```
 
-и заполнить `configs/experiment.env`; этот файл игнорируется git. В Colab лучше
+и заполнить `configs/experiment.env`; этот файл игнорируется git. Перед commit запусти:
+
+```bash
+python scripts/check_no_secrets.py
+``` В Colab лучше
 использовать Secrets с теми же именами: `HF_TOKEN`, `GITHUB_TOKEN`.
 
 Если ты запускаешь Colab через расширение VS Code и Colab Secrets недоступны,
-notebook спросит `HF_TOKEN` через скрытый `getpass`-ввод. Значение попадёт только
-в `os.environ` текущего runtime. Для GitHub push можно включить:
+используй `.env`-файл. Важно: локальный `configs/experiment.env` на Windows
+не виден удалённому Colab runtime автоматически. Есть два рабочих варианта:
 
-```python
-EXPERIMENT["PROMPT_FOR_GITHUB_TOKEN"] = "1"
-```
+1. Вставить содержимое env-файла в опциональную ячейку `0a`, чтобы она создала
+   `/content/experiment.env`, затем сразу очистить `ENV_TEXT` перед commit.
+2. Любым доступным способом загрузить файл в runtime как `/content/experiment.env`.
 
-или заранее задать `GITHUB_TOKEN` в окружении runtime.
+Значения попадут только в `os.environ` текущего runtime и не печатаются.
 
 Рекомендуемая схема веток:
 
@@ -81,8 +86,6 @@ EXPERIMENT["PROMPT_FOR_GITHUB_TOKEN"] = "1"
        "PROJECT_DIR": "/content/diffusion_gemma_bench",
        "VLLM_HOST": "127.0.0.1",
        "VLLM_PORT": "8000",
-       "PROMPT_FOR_HF_TOKEN": "1",
-       "PROMPT_FOR_GITHUB_TOKEN": "0",
    }
    ```
 
@@ -92,6 +95,7 @@ EXPERIMENT["PROMPT_FOR_GITHUB_TOKEN"] = "1"
    - `unittest` прошёл;
    - `preflight.json` содержит GPU summary;
    - `backend_capability.json` создан;
+   - `backend_server_smoke.json` содержит `BACKEND_SMOKE_PASSED`;
    - `run_manifest.json` содержит `git.commit_sha`;
    - `smoke_status.json` равен `PENDING_COLAB_BACKEND_GATE`;
    - `validation.ok` равен `True`.
@@ -139,7 +143,7 @@ PENDING_COLAB_BACKEND_GATE
 
 1. установку/проверку vLLM;
 2. проверку Hugging Face access без логирования `HF_TOKEN`;
-3. запуск лёгкого OpenAI-compatible server на `127.0.0.1`;
+3. запуск лёгкого vLLM/OpenAI-compatible server на `127.0.0.1`;
 4. health endpoint;
 5. streaming TTFC check;
 6. strict JSON/tool prompt check;

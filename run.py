@@ -15,6 +15,7 @@ from typing import Any
 from src.bootstrap import start_phase
 from src.bfcl_runner import run_bfcl_lite
 from src.backend_check import run_backend_check
+from src.backend_smoke import run_backend_smoke
 from src.preflight import run_preflight
 from src.reporting import generate_report
 from src.utils import RESULTS_DIR, append_jsonl, project_path, write_json
@@ -23,6 +24,7 @@ from src.utils import RESULTS_DIR, append_jsonl, project_path, write_json
 PHASES = {
     "preflight",
     "backend-check",
+    "backend-smoke",
     "smoke",
     "pilot",
     "core",
@@ -54,6 +56,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "backend-check":
         result = run_backend_check(args.profile)
         print_backend_check_summary(result)
+        return 0
+
+    if args.phase == "backend-smoke":
+        result = run_backend_smoke(args.profile)
+        print_backend_smoke_summary(result)
         return 0
 
     if args.phase == "report":
@@ -124,6 +131,19 @@ def print_backend_check_summary(result: dict[str, Any]) -> None:
     print(f"hf_token_present: {result['hf_token']['present']}")
     print(f"localhost_port_free: {result['localhost']['port_free']}")
     print(f"next_step: {result['next_step']}")
+
+
+def print_backend_smoke_summary(result: dict[str, Any]) -> None:
+    """Compact backend-smoke summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"server: {result.get('server_bound_host')}:{result.get('server_port')}")
+    print(f"health_ok: {result.get('health_ok')}")
+    print(f"non_streaming_ok: {result.get('non_streaming_ok')}")
+    print(f"streaming_ok: {result.get('streaming_ok')}")
+    print(f"strict_json_ok: {result.get('strict_json_ok')}")
+    print(f"ttfc_ms: {result.get('ttfc_ms')}")
+    print(f"e2e_latency_ms: {result.get('e2e_latency_ms')}")
 
 
 if __name__ == "__main__":

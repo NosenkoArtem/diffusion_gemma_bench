@@ -18,11 +18,26 @@ phases:
       - hf_token_present
       - model_repo_metadata_access
       - localhost_port_free
+  backend_smoke:
+    command: python run.py --profile <selected_profile> --phase backend-smoke
+    requires:
+      - backend_check
+    writes:
+      - results/backend_server_smoke.json
+      - results/backend_events.jsonl
+    checks:
+      - local_server_bound_to_127_0_0_1
+      - health_endpoint_ok
+      - non_streaming_completion_ok
+      - streaming_sse_ok
+      - ttfc_measured
+      - strict_json_tool_call_ok
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
       - preflight
       - backend_check
+      - backend_smoke
     models: [DG-Native, G26-AR, G26-MTP]
     success_gates:
       model_load_success: true

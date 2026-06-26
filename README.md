@@ -35,6 +35,7 @@ after preflight confirms hardware, backend, model access, and MTP capability.
 ```bash
 python run.py --profile auto --phase preflight
 python run.py --profile auto --phase backend-check
+python run.py --profile q6_core_native --phase backend-smoke
 python run.py --profile q6_core_native --phase smoke
 python run.py --profile q6_core_native --phase pilot
 python run.py --profile q6_core_native --phase core --confirm-go
@@ -74,6 +75,12 @@ Before backend/model checks, create these secrets outside git:
 Variable names and non-secret defaults are documented in
 `configs/experiment.env.example`. If you need a local file, copy it to
 `configs/experiment.env`; that file is ignored by git.
+
+Before committing notebooks or docs, run:
+
+```bash
+python scripts/check_no_secrets.py
+```
 
 1. Push this repository to GitHub.
 2. In VS Code, open `notebooks/01_colab_runner.ipynb`.

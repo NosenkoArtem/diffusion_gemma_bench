@@ -18,7 +18,7 @@ Pending data from the corresponding phase.
 
 ## Backend/version matrix
 
-Pending data from the corresponding phase.
+See `results/backend_capability.json` and `results/backend_server_smoke.json` when available.
 
 ## MTP configuration and tuning
 

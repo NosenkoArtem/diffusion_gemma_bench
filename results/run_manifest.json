@@ -1,13 +1,13 @@
 {
   "git": {
     "branch": "main",
-    "commit_sha": "720b85d77b8558de7909c8c49a6fd5e186a9f5fe",
+    "commit_sha": "3098c1ab7c7993ca8f29937b232f2ecc2d154915",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "720b85d7"
+    "short_commit_sha": "3098c1ab"
   },
-  "phase": "preflight",
-  "profile": "auto",
-  "run_id": "fixed-run",
-  "started_at": "2026-06-25T19:42:12+00:00"
+  "phase": "report",
+  "profile": "q6_core_native",
+  "run_id": "report-20260625T212655Z-1f2a5f",
+  "started_at": "2026-06-25T21:26:55+00:00"
 }

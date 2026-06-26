@@ -34,7 +34,8 @@ class ResultStoreTests(unittest.TestCase):
     def test_validate_result_tree_rejects_secret_like_token(self):
         with tempfile.TemporaryDirectory() as tmp:
             run_dir = Path(tmp)
-            (run_dir / "preflight.json").write_text('{"token": "ghp_123456789012345678901234"}', encoding="utf-8")
+            token = "ghp_" + "123456789012345678901234"
+            (run_dir / "preflight.json").write_text(f'{{"token": "{token}"}}', encoding="utf-8")
             report = validate_result_tree(run_dir)
             self.assertFalse(report["ok"])
             self.assertTrue(any("possible_secret" in error for error in report["errors"]))
