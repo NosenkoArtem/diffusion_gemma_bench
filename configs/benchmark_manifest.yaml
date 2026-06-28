@@ -32,12 +32,30 @@ phases:
       - streaming_sse_ok
       - ttfc_measured
       - strict_json_tool_call_ok
+  model_gate:
+    command: python run.py --profile <selected_profile> --phase model-gate
+    requires:
+      - preflight
+      - backend_check
+      - backend_smoke
+    writes:
+      - results/model_gate.json
+      - reports/experiment_summary.md
+      - reports/experiment_summary.json
+    checks:
+      - gpu_visible
+      - disk_free_above_floor
+      - vllm_importable
+      - hf_token_present
+      - model_repo_metadata_access
+      - expected_profile_artifacts_visible
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
       - preflight
       - backend_check
       - backend_smoke
+      - model_gate
     models: [DG-Native, G26-AR, G26-MTP]
     success_gates:
       model_load_success: true

@@ -1,0 +1,69 @@
+{
+  "disk": {
+    "free_gib": 835.64,
+    "min_required_gib": 55
+  },
+  "git": {
+    "branch": "main",
+    "commit_sha": "23055777b93844b91962ac0d42b5851418aff98b",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "23055777"
+  },
+  "gpu": {
+    "available": false
+  },
+  "hf_token": {
+    "present": false
+  },
+  "models": [
+    {
+      "error_type": "hf_token_missing",
+      "expected_file_visible": null,
+      "expected_filename": "diffusiongemma-26B-A4B-it-Q6_K.gguf",
+      "model_id": "DG-Native",
+      "repo_access_ok": null,
+      "repo_id": "unsloth/diffusiongemma-26B-A4B-it-GGUF",
+      "role": "primary_diffusion_model",
+      "visible_file_count": null
+    },
+    {
+      "error_type": "hf_token_missing",
+      "expected_file_visible": null,
+      "expected_filename": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "model_id": "G26-AR",
+      "repo_access_ok": null,
+      "repo_id": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "role": "autoregressive_attribution_baseline",
+      "visible_file_count": null
+    },
+    {
+      "error_type": "hf_token_missing",
+      "expected_file_visible": null,
+      "expected_filename": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "model_id": "G26-MTP",
+      "repo_access_ok": null,
+      "repo_id": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "role": "primary_gemma_practical_profile",
+      "visible_file_count": null
+    }
+  ],
+  "next_step": "Install or repair vLLM in the Colab runtime, then rerun model-gate.",
+  "packages": {
+    "cuda_visible_devices": null,
+    "huggingface_hub": null,
+    "requests": null,
+    "torch": null,
+    "vllm": null
+  },
+  "phase": "model-gate",
+  "profile": "q6_core_native",
+  "reasons": [
+    "no_gpu_detected",
+    "vllm_not_importable",
+    "huggingface_hub_not_importable",
+    "hf_token_missing"
+  ],
+  "status": "MODEL_GATE_NEEDS_SETUP",
+  "timestamp": "2026-06-26T12:39:17+00:00"
+}

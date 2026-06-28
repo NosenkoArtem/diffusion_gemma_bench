@@ -1,24 +1,24 @@
 {
-  "e2e_latency_ms": 21.541400026762858,
+  "e2e_latency_ms": 21.855800005141646,
   "git": {
     "branch": "main",
-    "commit_sha": "25484d608c652ef3be781dece3daa6f671ca187c",
+    "commit_sha": "23055777b93844b91962ac0d42b5851418aff98b",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "25484d60"
+    "short_commit_sha": "23055777"
   },
   "health_ok": true,
   "non_streaming_ok": true,
   "non_streaming_text_length": 73,
   "profile": "q6_core_native",
   "server_bound_host": "127.0.0.1",
-  "server_port": 61909,
+  "server_port": 61176,
   "status": "BACKEND_SMOKE_PASSED",
   "stream_chunk_count": 2,
   "streaming_ok": true,
   "strict_json_error": null,
   "strict_json_ok": true,
   "text": "{\"type\":\"tool_call\",\"name\":\"get_order\",\"arguments\":{\"order_id\":\"O-1001\"}}",
-  "timestamp": "2026-06-26T11:36:22+00:00",
-  "ttfc_ms": 0.7126000127755105
+  "timestamp": "2026-06-26T12:39:15+00:00",
+  "ttfc_ms": 0.5790000141132623
 }

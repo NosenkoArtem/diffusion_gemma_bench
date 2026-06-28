@@ -53,15 +53,61 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
     try:
         import yaml  # type: ignore
-    except ModuleNotFoundError as exc:
-        raise RuntimeError(
-            "PyYAML is required to load config files. Install requirements.lock first."
-        ) from exc
+    except ModuleNotFoundError:
+        return _load_simple_yaml_mapping(path)
     with path.open("r", encoding="utf-8") as fh:
         loaded = yaml.safe_load(fh) or {}
     if not isinstance(loaded, dict):
         raise ValueError(f"Expected mapping at {path}")
     return loaded
+
+
+def _load_simple_yaml_mapping(path: Path) -> dict[str, Any]:
+    """Parse the small mapping-only YAML configs used by smoke tests.
+
+    This fallback keeps local/unit-test execution working in minimal Python
+    environments. It intentionally supports only nested mappings and scalar
+    values; install PyYAML for full YAML support.
+    """
+
+    root: dict[str, Any] = {}
+    stack: list[tuple[int, dict[str, Any]]] = [(-1, root)]
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        line = raw_line.strip()
+        if ":" not in line:
+            raise RuntimeError(f"Unsupported YAML line in {path}: {raw_line}")
+        key, value = line.split(":", 1)
+        key = key.strip().strip("'\"")
+        value = value.strip()
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        parent = stack[-1][1]
+        if not value:
+            child: dict[str, Any] = {}
+            parent[key] = child
+            stack.append((indent, child))
+        else:
+            parent[key] = _parse_simple_yaml_scalar(value)
+    return root
+
+
+def _parse_simple_yaml_scalar(value: str) -> Any:
+    value = value.strip()
+    if value in {"true", "True"}:
+        return True
+    if value in {"false", "False"}:
+        return False
+    if value in {"null", "None", "~"}:
+        return None
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        if not inner:
+            return []
+        return [item.strip().strip("'\"") for item in inner.split(",")]
+    return value.strip("'\"")
 
 
 def write_json(path: Path, payload: Any) -> None:

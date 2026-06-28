@@ -15,6 +15,9 @@ kernel + GitHub checkout + локальные тесты + запись резу
 - `preflight` пишет hardware/runtime metadata;
 - `backend-check` пишет `results/backend_capability.json`;
 - `backend-smoke` пишет `results/backend_server_smoke.json`;
+- `model-gate` пишет `results/model_gate.json`;
+- `model-gate` создаёт `reports/experiment_summary.md` и
+  `reports/experiment_summary.json`;
 - placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
 - `report` создаёт `reports/final_report.md`;
 - маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
@@ -98,6 +101,8 @@ python scripts/check_no_secrets.py
    - `preflight.json` содержит GPU summary;
    - `backend_capability.json` создан;
    - `backend_server_smoke.json` содержит `BACKEND_SMOKE_PASSED`;
+   - `model_gate.json` содержит `MODEL_GATE_PASSED` или явный список blockers;
+   - `experiment_summary.md` содержит цель, задачи, таблицу метрик и критерии;
    - `run_manifest.json` содержит `git.commit_sha`;
    - `smoke_status.json` равен `PENDING_COLAB_BACKEND_GATE`;
    - `validation.ok` равен `True`.
@@ -118,6 +123,36 @@ python scripts/check_no_secrets.py
 сессии.
 
 Перед commit не сохраняй notebook outputs с авторизационными данными.
+
+## Эксперимент 3: model-gate
+
+Цель эксперимента: проверить, можно ли переходить от harness-smoke к реальным
+модельным smoke-тестам без скачивания 26B весов.
+
+Эксперимент проверяет:
+
+- видимость GPU и объём VRAM;
+- свободное место на диске;
+- версии `torch`, `vllm`, `huggingface_hub`;
+- наличие `HF_TOKEN`;
+- доступ к Hugging Face model repositories;
+- видимость ожидаемых файлов для выбранного профиля;
+- доступ к MTP assistant repo для `G26-MTP`.
+
+Критерии успеха:
+
+- GPU доступна и имеет минимум 24 GiB VRAM для модельного smoke;
+- свободно минимум 55 GiB диска;
+- `vllm` импортируется;
+- `HF_TOKEN` загружен;
+- repo metadata доступна для всех целевых моделей;
+- ожидаемые файлы выбранного профиля видны в Hugging Face metadata.
+
+Артефакты:
+
+- `results/model_gate.json`: машинно-читаемый gate-result;
+- `reports/experiment_summary.md`: человекочитаемое резюме эксперимента;
+- `reports/experiment_summary.json`: структурированная версия резюме.
 
 ## Ожидаемые статусы
 

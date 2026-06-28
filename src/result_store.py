@@ -45,6 +45,7 @@ ALLOWED_ROOT_RESULTS = (
     "bfcl_summary.json",
     "backend_capability.json",
     "backend_server_smoke.json",
+    "model_gate.json",
     "BLOCKED_HARDWARE.json",
     "BLOCKED_BACKEND.json",
 )
@@ -52,6 +53,8 @@ ALLOWED_ROOT_RESULTS = (
 ALLOWED_REPORTS = (
     "final_report.md",
     "final_report.html",
+    "experiment_summary.md",
+    "experiment_summary.json",
 )
 
 MAX_COMMIT_FILE_BYTES = 5 * 1024 * 1024
