@@ -195,12 +195,20 @@ def blocking_reasons(models: list[dict[str, Any]], hf_token_present: bool, hf_hu
     """Return review blockers from discovery output."""
 
     reasons: list[str] = []
+    prerequisites_ok = True
     if not hf_token_present:
         reasons.append("hf_token_missing")
+        prerequisites_ok = False
     if not hf_hub_available:
         reasons.append("huggingface_hub_not_importable")
+        prerequisites_ok = False
     if not enable_search:
         reasons.append("search_disabled")
+        prerequisites_ok = False
+
+    if not prerequisites_ok:
+        return unique(reasons)
+
     if any(model.get("error_type") for model in models):
         reasons.append("model_search_failed")
     if any(not model.get("best_candidate") for model in models):
@@ -280,12 +288,16 @@ def next_step(status: str, reasons: list[str]) -> str:
 
     if status == "ARTIFACT_DISCOVERY_PASSED":
         return "Artifact discovery passed: update configs/models.yaml with confirmed repo ids/files, rerun model-gate, then attempt minimal model-load smoke."
+    if "hf_token_missing" in reasons:
+        return "Load HF_TOKEN/HUGGING_FACE_HUB_TOKEN and rerun artifact-discovery."
+    if "huggingface_hub_not_importable" in reasons:
+        return "Install huggingface_hub in the active runtime and rerun artifact-discovery."
+    if "search_disabled" in reasons:
+        return "Enable Hugging Face search after token and dependencies are ready, then rerun artifact-discovery."
     if "candidate_repo_missing" in reasons:
         return "Review Hugging Face search queries and model naming; no accessible candidate repo was found for at least one model."
     if "expected_filename_not_confirmed" in reasons:
         return "Review candidate files and update expected filenames before model downloads."
-    if "hf_token_missing" in reasons:
-        return "Load HF_TOKEN/HUGGING_FACE_HUB_TOKEN and rerun artifact-discovery."
     return "Review discovery blockers, adjust model config/search queries, and rerun artifact-discovery."
 
 

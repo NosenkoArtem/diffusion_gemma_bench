@@ -2,7 +2,7 @@ import unittest
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
-from src.artifact_discovery import run_artifact_discovery
+from src.artifact_discovery import blocking_reasons, next_step, run_artifact_discovery
 
 
 class ArtifactDiscoveryTests(unittest.TestCase):
@@ -24,6 +24,17 @@ class ArtifactDiscoveryTests(unittest.TestCase):
             summary_path = root / "reports" / "experiment_summary_artifact-discovery.md"
             self.assertTrue(summary_path.exists())
             self.assertIn("Experiment 5", summary_path.read_text(encoding="utf-8"))
+
+    def test_missing_token_is_reported_before_candidate_review(self):
+        reasons = blocking_reasons(
+            [{"model_id": "DG-Native", "best_candidate": None, "error_type": "hf_token_missing"}],
+            hf_token_present=False,
+            hf_hub_available=True,
+            enable_search=True,
+        )
+
+        self.assertEqual(reasons, ["hf_token_missing"])
+        self.assertIn("Load HF_TOKEN", next_step("ARTIFACT_DISCOVERY_NEEDS_REVIEW", reasons))
 
 
 if __name__ == "__main__":
