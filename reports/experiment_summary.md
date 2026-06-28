@@ -1,52 +1,49 @@
-# Experiment 5: Model Artifact Discovery
+# Experiment 6: Minimal Model Load Smoke
 
-- Phase: `artifact-discovery`
+- Phase: `model-load-smoke`
 - Profile: `q6_core_native`
-- Timestamp: `2026-06-28T18:16:40+00:00`
+- Timestamp: `2026-06-28T19:53:40+00:00`
 
 ## Objective
 
-Find correct Hugging Face repositories and visible weight files for the configured models without downloading large artifacts.
+Verify that the confirmed GGUF artifact can be downloaded/cached and loaded by vLLM before running generation benchmarks.
 
 ## Tasks
 
-- Search Hugging Face metadata for DiffusionGemma/Gemma candidate repositories.
-- Inspect visible files for candidate repos without downloading weights.
-- Select best repo/file candidates for DG-Native, G26-AR, and G26-MTP.
-- Produce a reviewable recommendation before editing model config.
+- Resolve the configured repo id and GGUF filename for the selected target.
+- Download the artifact through Hugging Face cache, or reuse it if already cached.
+- Instantiate a minimal vLLM engine with conservative context length.
+- Record load time, artifact size, hardware snapshot, and any failure traceback.
 
 ## Metrics
 
 | metric | value | status | note |
 | --- | --- | --- | --- |
-| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing |
-| hf_token_present | no | blocked |  |
-| huggingface_hub_version |  | blocked |  |
-| DG-Native_best_repo |  | missing | expected_file_visible=None |
-| DG-Native_candidate_count | 0 | info | hf_token_missing |
-| DG-Native_search_error_count | 0 | info |  |
-| G26-AR_best_repo |  | missing | expected_file_visible=None |
-| G26-AR_candidate_count | 0 | info | hf_token_missing |
-| G26-AR_search_error_count | 0 | info |  |
-| G26-MTP_best_repo |  | missing | expected_file_visible=None |
-| G26-MTP_candidate_count | 0 | info | hf_token_missing |
-| G26-MTP_search_error_count | 0 | info |  |
+| status | MODEL_LOAD_SMOKE_NEEDS_REVIEW | MODEL_LOAD_SMOKE_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, download_disabled, load_disabled, model_blocked |
+| download_enabled | no | info |  |
+| load_enabled | no | info |  |
+| gpu |  | info | `{"available": null, "error": "No module named 'torch'", "error_type": "ModuleNotFoundError"}` |
+| disk_free_gib | 834.6 | info |  |
+| G26-AR_status | BLOCKED | review |  |
+| G26-AR_download_s |  | info |  |
+| G26-AR_load_s |  | info |  |
+| G26-AR_artifact_bytes |  | info | gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf |
 
 ## Success Criteria
 
 | criterion | passed | note |
 | --- | --- | --- |
 | HF token is loaded | no |  |
-| Hugging Face search can run | no |  |
-| Each configured model has at least one accessible candidate | no |  |
-| Expected filenames are confirmed or require explicit config update | yes |  |
+| Target artifact downloads or is already cached | no |  |
+| At least one target model loads in vLLM | no |  |
+| No model-load OOM or backend exception | yes |  |
 
 ## Conclusion
 
-Review Hugging Face search queries and model naming; no accessible candidate repo was found for at least one model.
+This was a dry run. Enable download/load in Colab when ready to consume disk/VRAM.
 
 ## Artifacts
 
-- `results/artifact_discovery.json`
-- `reports/experiment_summary_artifact-discovery.md`
-- `reports/experiment_summary_artifact-discovery.json`
+- `results/model_load_smoke.json`
+- `reports/experiment_summary_model-load-smoke.md`
+- `reports/experiment_summary_model-load-smoke.json`

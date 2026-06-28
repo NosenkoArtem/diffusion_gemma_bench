@@ -48,6 +48,7 @@ ALLOWED_ROOT_RESULTS = (
     "model_gate.json",
     "vllm_setup.json",
     "artifact_discovery.json",
+    "model_load_smoke.json",
     "BLOCKED_HARDWARE.json",
     "BLOCKED_BACKEND.json",
 )
@@ -63,6 +64,8 @@ ALLOWED_REPORTS = (
     "experiment_summary_vllm-setup.json",
     "experiment_summary_artifact-discovery.md",
     "experiment_summary_artifact-discovery.json",
+    "experiment_summary_model-load-smoke.md",
+    "experiment_summary_model-load-smoke.json",
 )
 
 MAX_COMMIT_FILE_BYTES = 5 * 1024 * 1024

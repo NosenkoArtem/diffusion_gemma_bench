@@ -17,6 +17,7 @@ from src.bfcl_runner import run_bfcl_lite
 from src.artifact_discovery import run_artifact_discovery
 from src.backend_check import run_backend_check
 from src.backend_smoke import run_backend_smoke
+from src.model_load_smoke import run_model_load_smoke
 from src.model_gate import run_model_gate
 from src.preflight import run_preflight
 from src.reporting import generate_report
@@ -31,6 +32,7 @@ PHASES = {
     "model-gate",
     "vllm-setup",
     "artifact-discovery",
+    "model-load-smoke",
     "smoke",
     "pilot",
     "core",
@@ -47,6 +49,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--phase", required=True, choices=sorted(PHASES), help="Benchmark phase to run")
     parser.add_argument("--run-id", default=None, help="Optional existing run id for resume workflows")
     parser.add_argument("--confirm-go", action="store_true", help="Required for phases that can consume long GPU time")
+    parser.add_argument("--targets", default="G26-AR", help="Comma-separated model ids for model-load-smoke")
+    parser.add_argument("--download", action="store_true", help="Allow model-load-smoke to download/cache model artifacts")
+    parser.add_argument("--load", action="store_true", help="Allow model-load-smoke to instantiate a vLLM engine")
+    parser.add_argument("--max-model-len", type=int, default=512, help="Conservative vLLM context length for model-load-smoke")
+    parser.add_argument("--gpu-memory-utilization", type=float, default=0.82, help="vLLM GPU memory utilization for model-load-smoke")
     return parser.parse_args(argv)
 
 
@@ -82,6 +89,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "artifact-discovery":
         result = run_artifact_discovery(args.profile)
         print_artifact_discovery_summary(result)
+        return 0
+
+    if args.phase == "model-load-smoke":
+        if not args.confirm_go:
+            raise SystemExit("model-load-smoke requires --confirm-go because it may download large files and allocate GPU memory.")
+        result = run_model_load_smoke(
+            args.profile,
+            targets=tuple(item.strip() for item in args.targets.split(",") if item.strip()),
+            download_enabled=args.download,
+            load_enabled=args.load,
+            max_model_len=args.max_model_len,
+            gpu_memory_utilization=args.gpu_memory_utilization,
+        )
+        print_model_load_smoke_summary(result)
         return 0
 
     if args.phase == "report":
@@ -212,6 +233,31 @@ def print_artifact_discovery_summary(result: dict[str, Any]) -> None:
             f"best_repo={best.get('repo_id')} expected_file_visible={best.get('expected_file_visible')} "
             f"error={model.get('error_type')} search_errors={len(model.get('search_errors', []))}"
         )
+    print(f"next_step: {result['next_step']}")
+
+
+def print_model_load_smoke_summary(result: dict[str, Any]) -> None:
+    """Compact model-load-smoke summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"reasons: {result['reasons']}")
+    print(f"targets: {result['targets']}")
+    print(f"settings: {result['settings']}")
+    print(f"gpu: {result['hardware']['gpu']}")
+    print(f"disk: {result['hardware']['disk']}")
+    print(f"packages: {result['packages']}")
+    for model in result["models"]:
+        print(
+            "model: "
+            f"{model['model_id']} status={model.get('status')} "
+            f"download_ok={model.get('download', {}).get('ok')} "
+            f"load_ok={model.get('load', {}).get('ok')} "
+            f"file={model.get('filename')}"
+        )
+        if model.get("load", {}).get("error_type"):
+            print(f"  load_error: {model['load']['error_type']} {model['load'].get('error')}")
+        if model.get("download", {}).get("error_type"):
+            print(f"  download_error: {model['download']['error_type']} {model['download'].get('error')}")
     print(f"next_step: {result['next_step']}")
 
 

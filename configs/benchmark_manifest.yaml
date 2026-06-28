@@ -76,6 +76,22 @@ phases:
       - huggingface_hub_importable
       - candidate_repos_found
       - candidate_files_visible
+  model_load_smoke:
+    command: python run.py --profile <selected_profile> --phase model-load-smoke --targets G26-AR --download --load --confirm-go
+    requires:
+      - artifact_discovery
+      - model_gate
+      - vllm_setup
+    writes:
+      - results/model_load_smoke.json
+      - reports/experiment_summary_model-load-smoke.md
+      - reports/experiment_summary_model-load-smoke.json
+    checks:
+      - target_artifact_downloaded_or_cached
+      - vllm_engine_instantiates
+      - load_time_recorded
+      - memory_snapshot_recorded
+      - no_model_load_exception
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
