@@ -21,6 +21,9 @@ kernel + GitHub checkout + локальные тесты + запись резу
 - `vllm-setup` пишет `results/vllm_setup.json`;
 - `vllm-setup` создаёт отдельные summary-файлы
   `reports/experiment_summary_vllm-setup.md/json`;
+- `artifact-discovery` пишет `results/artifact_discovery.json`;
+- `artifact-discovery` создаёт отдельные summary-файлы
+  `reports/experiment_summary_artifact-discovery.md/json`;
 - placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
 - `report` создаёт `reports/final_report.md`;
 - маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
@@ -202,6 +205,51 @@ external_results/<RUN_ID>/
 
 Содержимое `external_results/` игнорируется Git, кроме `README.md`. Это
 безопасная рабочая зона для анализа артефактов без коммита больших результатов.
+
+## Резюме прогонов 1-4
+
+Фактические результаты по сохранённым run-директориям:
+
+- `backend-smoke` на L4 прошёл: harness, тесты, локальный OpenAI-compatible
+  server smoke, strict JSON и Drive-save работают.
+- `model-gate` на A100 подтвердил, что GPU/диск подходят, но `vllm` ещё не был
+  установлен, а текущие Hugging Face repo ids/filenames не подтверждаются.
+- `vllm-setup` на RTX PRO 6000 Blackwell прошёл: `vllm` импортируется, GPU
+  доступна, VRAM достаточно. Оставшийся blocker — не backend, а model artifact
+  metadata: repo ids или expected filenames требуют проверки.
+
+## Эксперимент 5: artifact discovery
+
+Цель эксперимента: найти корректные Hugging Face repositories и видимые файлы
+весов для `DG-Native`, `G26-AR`, `G26-MTP` без скачивания больших артефактов.
+
+Почему это следующий шаг: после Experiment 4 backend готов (`vllm` импортируется),
+но `model-gate` всё ещё падает на:
+
+- `model_repo_access_failed`;
+- `expected_model_file_missing`;
+- `assistant_repo_access_failed`.
+
+Эксперимент делает:
+
+- поиск candidate repos через Hugging Face metadata;
+- чтение списка файлов candidate repos без download;
+- выбор best candidate per model;
+- создание reviewable recommendation перед правкой `configs/models.yaml`.
+
+Критерии успеха:
+
+- `HF_TOKEN` загружен;
+- `huggingface_hub` импортируется;
+- для каждой модели найден хотя бы один доступный candidate repo;
+- для каждого candidate repo видны файлы весов или конфигурации;
+- expected filenames либо подтверждены, либо явно требуют правки конфига.
+
+Артефакты:
+
+- `results/artifact_discovery.json`;
+- `reports/experiment_summary_artifact-discovery.md`;
+- `reports/experiment_summary_artifact-discovery.json`.
 
 ## Ожидаемые статусы
 

@@ -14,6 +14,7 @@ from typing import Any
 
 from src.bootstrap import start_phase
 from src.bfcl_runner import run_bfcl_lite
+from src.artifact_discovery import run_artifact_discovery
 from src.backend_check import run_backend_check
 from src.backend_smoke import run_backend_smoke
 from src.model_gate import run_model_gate
@@ -29,6 +30,7 @@ PHASES = {
     "backend-smoke",
     "model-gate",
     "vllm-setup",
+    "artifact-discovery",
     "smoke",
     "pilot",
     "core",
@@ -75,6 +77,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "vllm-setup":
         result = run_vllm_setup(args.profile)
         print_vllm_setup_summary(result)
+        return 0
+
+    if args.phase == "artifact-discovery":
+        result = run_artifact_discovery(args.profile)
+        print_artifact_discovery_summary(result)
         return 0
 
     if args.phase == "report":
@@ -187,6 +194,24 @@ def print_vllm_setup_summary(result: dict[str, Any]) -> None:
     print(f"gpu: {result['gpu']}")
     print(f"packages: {result['packages']}")
     print(f"vllm_import: {result['vllm_import']}")
+    print(f"next_step: {result['next_step']}")
+
+
+def print_artifact_discovery_summary(result: dict[str, Any]) -> None:
+    """Compact artifact-discovery summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"reasons: {result['reasons']}")
+    print(f"hf_token_present: {result['hf_token']['present']}")
+    print(f"packages: {result['packages']}")
+    for model in result["models"]:
+        best = model.get("best_candidate") or {}
+        print(
+            "model: "
+            f"{model['model_id']} candidates={len(model.get('candidate_repos', []))} "
+            f"best_repo={best.get('repo_id')} expected_file_visible={best.get('expected_file_visible')} "
+            f"error={model.get('error_type')}"
+        )
     print(f"next_step: {result['next_step']}")
 
 

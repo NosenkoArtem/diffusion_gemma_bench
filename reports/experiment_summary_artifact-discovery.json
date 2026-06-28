@@ -1,0 +1,97 @@
+{
+  "artifacts": [
+    "results/artifact_discovery.json",
+    "reports/experiment_summary_artifact-discovery.md",
+    "reports/experiment_summary_artifact-discovery.json"
+  ],
+  "conclusion": "Review Hugging Face search queries and model naming; no accessible candidate repo was found for at least one model.",
+  "criteria": [
+    {
+      "criterion": "HF token is loaded",
+      "note": "",
+      "passed": false
+    },
+    {
+      "criterion": "Hugging Face search can run",
+      "note": "",
+      "passed": false
+    },
+    {
+      "criterion": "Each configured model has at least one accessible candidate",
+      "note": "",
+      "passed": false
+    },
+    {
+      "criterion": "Expected filenames are confirmed or require explicit config update",
+      "note": "",
+      "passed": true
+    }
+  ],
+  "metrics": [
+    {
+      "metric": "discovery_status",
+      "note": "hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing",
+      "status": "ARTIFACT_DISCOVERY_NEEDS_REVIEW",
+      "value": "ARTIFACT_DISCOVERY_NEEDS_REVIEW"
+    },
+    {
+      "metric": "hf_token_present",
+      "note": "",
+      "status": "blocked",
+      "value": false
+    },
+    {
+      "metric": "huggingface_hub_version",
+      "note": "",
+      "status": "blocked",
+      "value": null
+    },
+    {
+      "metric": "DG-Native_best_repo",
+      "note": "expected_file_visible=None",
+      "status": "missing",
+      "value": null
+    },
+    {
+      "metric": "DG-Native_candidate_count",
+      "note": "hf_token_missing",
+      "status": "info",
+      "value": 0
+    },
+    {
+      "metric": "G26-AR_best_repo",
+      "note": "expected_file_visible=None",
+      "status": "missing",
+      "value": null
+    },
+    {
+      "metric": "G26-AR_candidate_count",
+      "note": "hf_token_missing",
+      "status": "info",
+      "value": 0
+    },
+    {
+      "metric": "G26-MTP_best_repo",
+      "note": "expected_file_visible=None",
+      "status": "missing",
+      "value": null
+    },
+    {
+      "metric": "G26-MTP_candidate_count",
+      "note": "hf_token_missing",
+      "status": "info",
+      "value": 0
+    }
+  ],
+  "objective": "Find correct Hugging Face repositories and visible weight files for the configured models without downloading large artifacts.",
+  "phase": "artifact-discovery",
+  "profile": "q6_core_native",
+  "tasks": [
+    "Search Hugging Face metadata for DiffusionGemma/Gemma candidate repositories.",
+    "Inspect visible files for candidate repos without downloading weights.",
+    "Select best repo/file candidates for DG-Native, G26-AR, and G26-MTP.",
+    "Produce a reviewable recommendation before editing model config."
+  ],
+  "timestamp": "2026-06-28T13:55:24+00:00",
+  "title": "Experiment 5: Model Artifact Discovery"
+}

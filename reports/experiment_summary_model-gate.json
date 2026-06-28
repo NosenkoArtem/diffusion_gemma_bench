@@ -16,7 +16,7 @@
     {
       "criterion": "At least 55 GiB disk is free",
       "note": {
-        "free_gib": 835.44,
+        "free_gib": 836.11,
         "min_required_gib": 55
       },
       "passed": true
@@ -60,7 +60,7 @@
       "metric": "disk_free_gib",
       "note": "minimum 55 GiB",
       "status": "ok",
-      "value": 835.44
+      "value": 836.11
     },
     {
       "metric": "vllm_importable",
@@ -121,6 +121,6 @@
     "Check vLLM importability as the primary backend gate.",
     "Record blockers and next-step decision for the model-smoke phase."
   ],
-  "timestamp": "2026-06-28T11:10:28+00:00",
+  "timestamp": "2026-06-28T13:55:26+00:00",
   "title": "Experiment 3: Model Access and Backend Feasibility Gate"
 }

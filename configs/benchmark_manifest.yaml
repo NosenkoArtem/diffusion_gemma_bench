@@ -62,6 +62,20 @@ phases:
       - torch_importable_after_install
       - vllm_importable_after_install
       - huggingface_hub_importable_after_install
+  artifact_discovery:
+    command: python run.py --profile <selected_profile> --phase artifact-discovery
+    requires:
+      - vllm_setup
+      - model_gate
+    writes:
+      - results/artifact_discovery.json
+      - reports/experiment_summary_artifact-discovery.md
+      - reports/experiment_summary_artifact-discovery.json
+    checks:
+      - hf_token_present
+      - huggingface_hub_importable
+      - candidate_repos_found
+      - candidate_files_visible
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
