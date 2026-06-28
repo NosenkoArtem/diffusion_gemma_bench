@@ -187,18 +187,19 @@ def load_vllm_engine(
     """Instantiate vLLM with a local GGUF artifact and immediately release it."""
 
     started = time.perf_counter()
+    kwargs = {
+        "model": str(local_path),
+        "tokenizer": cfg.get("base_tokenizer"),
+        "load_format": "gguf",
+        "max_model_len": max_model_len,
+        "gpu_memory_utilization": gpu_memory_utilization,
+        "trust_remote_code": True,
+    }
+    record["load"]["vllm_kwargs"] = {key: value for key, value in kwargs.items() if value is not None}
     try:
         from vllm import LLM
 
-        kwargs = {
-            "model": str(local_path),
-            "tokenizer": cfg.get("base_tokenizer"),
-            "load_format": "gguf",
-            "max_model_len": max_model_len,
-            "gpu_memory_utilization": gpu_memory_utilization,
-            "trust_remote_code": True,
-        }
-        engine = LLM(**{key: value for key, value in kwargs.items() if value is not None})
+        engine = LLM(**record["load"]["vllm_kwargs"])
         record["load"].update({"ok": True, "elapsed_s": round(time.perf_counter() - started, 3)})
         record["status"] = "LOAD_PASSED"
         del engine
@@ -272,11 +273,15 @@ def write_model_load_smoke_summary(
         {"metric": "disk_free_gib", "value": result["hardware"]["disk"].get("free_gib"), "status": "info", "note": ""},
     ]
     for model in result["models"]:
+        load_error_note = model["load"].get("error") or model["load"].get("error_type") or ""
+        download_error_note = model["download"].get("error") or model["download"].get("error_type") or ""
+        traceback_tail = " / ".join(model["load"].get("traceback_tail", [])[-4:])
         metrics.extend(
             [
                 {"metric": f"{model['model_id']}_status", "value": model["status"], "status": "ok" if model["status"] == "LOAD_PASSED" else "review", "note": ""},
-                {"metric": f"{model['model_id']}_download_s", "value": model["download"].get("elapsed_s"), "status": "info", "note": model["download"].get("error_type") or ""},
-                {"metric": f"{model['model_id']}_load_s", "value": model["load"].get("elapsed_s"), "status": "info", "note": model["load"].get("error_type") or ""},
+                {"metric": f"{model['model_id']}_download_s", "value": model["download"].get("elapsed_s"), "status": "info", "note": download_error_note},
+                {"metric": f"{model['model_id']}_load_s", "value": model["load"].get("elapsed_s"), "status": "info", "note": load_error_note},
+                {"metric": f"{model['model_id']}_traceback_tail", "value": traceback_tail, "status": "info", "note": ""},
                 {"metric": f"{model['model_id']}_artifact_bytes", "value": model["download"].get("size_bytes"), "status": "info", "note": model.get("filename")},
             ]
         )
@@ -316,7 +321,7 @@ def next_step(status: str, reasons: list[str]) -> str:
     if "download_failed" in reasons:
         return "Inspect Hugging Face download error, token access, disk space, and cache path before retrying."
     if "load_failed" in reasons:
-        return "Inspect vLLM load traceback and GPU memory; retry with lower max_model_len or lower gpu_memory_utilization."
+        return "Inspect vLLM load traceback. If this is an ImportError or GGUF support issue, repair the backend before changing GPU memory settings."
     return "Resolve listed blockers, then rerun model-load-smoke."
 
 
