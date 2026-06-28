@@ -20,6 +20,8 @@ class ModelLoadSmokeTests(unittest.TestCase):
 
             self.assertEqual(result["phase"], "model-load-smoke")
             self.assertEqual(result["targets"], ["G26-AR"])
+            self.assertIn("cuda_runtime", result)
+            self.assertIn("libcudart_so_13_candidates", result["cuda_runtime"])
             self.assertIn("download_disabled", result["reasons"])
             self.assertIn("load_disabled", result["reasons"])
             self.assertEqual(result["models"][0]["filename"], "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf")

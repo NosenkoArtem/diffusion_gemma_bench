@@ -44,6 +44,8 @@ MODEL_LOAD_MAX_MODEL_LEN = 512
 MODEL_LOAD_GPU_MEMORY_UTILIZATION = 0.82
 MODEL_LOAD_ENABLE_DOWNLOAD = True
 MODEL_LOAD_ENABLE_LOAD = True
+INSTALL_CUDA13_RUNTIME_FOR_VLLM = True
+CUDA13_RUNTIME_PIP_SPEC = "nvidia-cuda-runtime-cu13"
 ```
 
 Эквивалентная CLI-команда:
@@ -61,6 +63,31 @@ python run.py \
 ```
 
 Флаг `--confirm-go` обязателен, потому что фаза может скачать большой файл и занять GPU memory.
+
+## Если vLLM падает на `libcudart.so.13`
+
+Ошибка вида:
+
+```text
+ImportError: libcudart.so.13: cannot open shared object file
+```
+
+означает, что vLLM установлен в варианте, ожидающем CUDA 13 runtime library, но динамический загрузчик Python-процесса ее не видит. Это не OOM и не проблема размера модели.
+
+Ячейка Experiment 6 по умолчанию делает:
+
+```python
+pip install -U nvidia-cuda-runtime-cu13
+```
+
+а фаза `model-load-smoke` перед импортом vLLM:
+
+- ищет `nvidia/*/lib` внутри active site-packages;
+- добавляет эти директории в `LD_LIBRARY_PATH`;
+- пытается preload `libcudart.so.13` через `ctypes.CDLL`;
+- записывает диагностику в `results/model_load_smoke.json` в поле `cuda_runtime`.
+
+После такой правки повторный запуск обычно не скачивает модель заново: HF cache уже содержит GGUF-файл.
 
 ## Критерии успеха
 

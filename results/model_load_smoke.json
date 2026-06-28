@@ -1,0 +1,80 @@
+{
+  "cuda_runtime": {
+    "added_ld_library_dirs": [],
+    "candidate_dirs": [],
+    "libcudart_so_13_candidates": [],
+    "preloaded": false
+  },
+  "git": {
+    "branch": "main",
+    "commit_sha": "3066ed5a5334c7426803632a2a9d444409473934",
+    "dirty": true,
+    "is_git_checkout": true,
+    "short_commit_sha": "3066ed5a"
+  },
+  "hardware": {
+    "disk": {
+      "free_gib": 834.55,
+      "total_gib": 952.85,
+      "used_gib": 118.3
+    },
+    "gpu": {
+      "available": null,
+      "error": "No module named 'torch'",
+      "error_type": "ModuleNotFoundError"
+    },
+    "memory": {}
+  },
+  "hf_token": {
+    "present": false
+  },
+  "models": [
+    {
+      "base_tokenizer": "google/gemma-4-26B-A4B-it",
+      "download": {
+        "enabled": false,
+        "ok": null
+      },
+      "error_type": "hf_token_missing",
+      "filename": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+      "finished_at": "2026-06-28T20:28:02+00:00",
+      "load": {
+        "enabled": false,
+        "ok": null
+      },
+      "memory_after": {},
+      "memory_before": {},
+      "model_id": "G26-AR",
+      "repo_id": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
+      "started_at": "2026-06-28T20:28:02+00:00",
+      "status": "BLOCKED"
+    }
+  ],
+  "next_step": "This was a dry run. Enable download/load in Colab when ready to consume disk/VRAM.",
+  "packages": {
+    "huggingface_hub": null,
+    "psutil": null,
+    "torch": null,
+    "vllm": null
+  },
+  "phase": "model-load-smoke",
+  "profile": "q6_core_native",
+  "reasons": [
+    "hf_token_missing",
+    "huggingface_hub_not_importable",
+    "download_disabled",
+    "load_disabled",
+    "model_blocked"
+  ],
+  "settings": {
+    "download_enabled": false,
+    "gpu_memory_utilization": 0.82,
+    "load_enabled": false,
+    "max_model_len": 512
+  },
+  "status": "MODEL_LOAD_SMOKE_NEEDS_REVIEW",
+  "targets": [
+    "G26-AR"
+  ],
+  "timestamp": "2026-06-28T20:28:02+00:00"
+}

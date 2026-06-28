@@ -7,8 +7,10 @@ resource metrics and errors, then decide whether to attempt the next model.
 
 from __future__ import annotations
 
+import ctypes
 import os
 import shutil
+import sys
 import time
 import traceback
 from pathlib import Path
@@ -39,6 +41,7 @@ def run_model_load_smoke(
     models_config = load_yaml(project_path("configs", "models.yaml")).get("models", {})
     target_ids = [target for target in targets if target]
     hf_token_present = bool(os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN"))
+    cuda_runtime = prepare_cuda_runtime()
     packages = package_versions()
     model_results = [
         smoke_one_model(
@@ -71,6 +74,7 @@ def run_model_load_smoke(
         },
         "hf_token": {"present": hf_token_present},
         "packages": packages,
+        "cuda_runtime": cuda_runtime,
         "hardware": hardware_snapshot(),
         "models": model_results,
         "git": git_revision(),
@@ -196,6 +200,7 @@ def load_vllm_engine(
         "trust_remote_code": True,
     }
     record["load"]["vllm_kwargs"] = {key: value for key, value in kwargs.items() if value is not None}
+    record["load"]["cuda_runtime_before_import"] = prepare_cuda_runtime()
     try:
         from vllm import LLM
 
@@ -269,6 +274,7 @@ def write_model_load_smoke_summary(
         {"metric": "status", "value": result["status"], "status": result["status"], "note": ", ".join(result["reasons"])},
         {"metric": "download_enabled", "value": result["settings"]["download_enabled"], "status": "info", "note": ""},
         {"metric": "load_enabled", "value": result["settings"]["load_enabled"], "status": "info", "note": ""},
+        {"metric": "cuda_runtime_preloaded", "value": result["cuda_runtime"].get("preloaded"), "status": "info", "note": result["cuda_runtime"].get("preload_error") or result["cuda_runtime"].get("preloaded_path")},
         {"metric": "gpu", "value": result["hardware"]["gpu"].get("name"), "status": "info", "note": result["hardware"]["gpu"]},
         {"metric": "disk_free_gib", "value": result["hardware"]["disk"].get("free_gib"), "status": "info", "note": ""},
     ]
@@ -334,6 +340,69 @@ def package_versions() -> dict[str, Any]:
         "huggingface_hub": module_version("huggingface_hub"),
         "psutil": module_version("psutil"),
     }
+
+
+def prepare_cuda_runtime() -> dict[str, Any]:
+    """Expose pip-installed NVIDIA CUDA runtime libraries to vLLM imports."""
+
+    candidate_dirs = nvidia_library_dirs()
+    added_dirs = []
+    existing = [item for item in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep) if item]
+    for lib_dir in candidate_dirs:
+        lib_dir_text = str(lib_dir)
+        if lib_dir_text not in existing:
+            existing.insert(0, lib_dir_text)
+            added_dirs.append(lib_dir_text)
+    if added_dirs:
+        os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(existing)
+
+    candidates = []
+    for lib_dir in candidate_dirs:
+        candidates.extend(sorted(str(path) for path in lib_dir.glob("libcudart.so.13*")))
+    result: dict[str, Any] = {
+        "candidate_dirs": [str(path) for path in candidate_dirs],
+        "added_ld_library_dirs": added_dirs,
+        "libcudart_so_13_candidates": candidates,
+        "preloaded": False,
+    }
+    for candidate in candidates:
+        try:
+            ctypes.CDLL(candidate, mode=ctypes.RTLD_GLOBAL)
+            result["preloaded"] = True
+            result["preloaded_path"] = candidate
+            return result
+        except Exception as exc:
+            result["preload_error"] = safe_error(exc)
+    return result
+
+
+def nvidia_library_dirs() -> list[Path]:
+    """Find `nvidia/*/lib` directories from active Python site-packages paths."""
+
+    roots = []
+    for entry in sys.path:
+        path = Path(entry)
+        if path.exists() and path.name in {"site-packages", "dist-packages"}:
+            roots.append(path)
+    dirs: list[Path] = []
+    for root in roots:
+        nvidia_root = root / "nvidia"
+        if nvidia_root.exists():
+            dirs.extend(sorted(path for path in nvidia_root.glob("*/lib") if path.is_dir()))
+    return unique_paths(dirs)
+
+
+def unique_paths(paths: list[Path]) -> list[Path]:
+    """Return paths preserving order without duplicates."""
+
+    seen = set()
+    out = []
+    for path in paths:
+        text = str(path)
+        if text not in seen:
+            seen.add(text)
+            out.append(path)
+    return out
 
 
 def hardware_snapshot() -> dict[str, Any]:
