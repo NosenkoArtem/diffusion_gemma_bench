@@ -7,16 +7,16 @@
   },
   "git": {
     "branch": "main",
-    "commit_sha": "3066ed5a5334c7426803632a2a9d444409473934",
+    "commit_sha": "d888b36507b7c2b25ffb93192a68dc0919fe418b",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "3066ed5a"
+    "short_commit_sha": "d888b365"
   },
   "hardware": {
     "disk": {
-      "free_gib": 834.55,
+      "free_gib": 834.54,
       "total_gib": 952.85,
-      "used_gib": 118.3
+      "used_gib": 118.31
     },
     "gpu": {
       "available": null,
@@ -37,7 +37,7 @@
       },
       "error_type": "hf_token_missing",
       "filename": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
-      "finished_at": "2026-06-28T20:28:02+00:00",
+      "finished_at": "2026-06-28T20:35:59+00:00",
       "load": {
         "enabled": false,
         "ok": null
@@ -46,7 +46,7 @@
       "memory_before": {},
       "model_id": "G26-AR",
       "repo_id": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
-      "started_at": "2026-06-28T20:28:02+00:00",
+      "started_at": "2026-06-28T20:35:59+00:00",
       "status": "BLOCKED"
     }
   ],
@@ -76,5 +76,5 @@
   "targets": [
     "G26-AR"
   ],
-  "timestamp": "2026-06-28T20:28:02+00:00"
+  "timestamp": "2026-06-28T20:35:59+00:00"
 }

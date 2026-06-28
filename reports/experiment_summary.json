@@ -66,7 +66,7 @@
       "metric": "disk_free_gib",
       "note": "",
       "status": "info",
-      "value": 834.55
+      "value": 834.54
     },
     {
       "metric": "G26-AR_status",
@@ -108,6 +108,6 @@
     "Instantiate a minimal vLLM engine with conservative context length.",
     "Record load time, artifact size, hardware snapshot, and any failure traceback."
   ],
-  "timestamp": "2026-06-28T20:28:02+00:00",
+  "timestamp": "2026-06-28T20:35:59+00:00",
   "title": "Experiment 6: Minimal Model Load Smoke"
 }

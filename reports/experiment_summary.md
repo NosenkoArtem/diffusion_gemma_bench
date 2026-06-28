@@ -2,7 +2,7 @@
 
 - Phase: `model-load-smoke`
 - Profile: `q6_core_native`
-- Timestamp: `2026-06-28T20:28:02+00:00`
+- Timestamp: `2026-06-28T20:35:59+00:00`
 
 ## Objective
 
@@ -24,7 +24,7 @@ Verify that the confirmed GGUF artifact can be downloaded/cached and loaded by v
 | load_enabled | no | info |  |
 | cuda_runtime_preloaded | no | info |  |
 | gpu |  | info | `{"available": null, "error": "No module named 'torch'", "error_type": "ModuleNotFoundError"}` |
-| disk_free_gib | 834.55 | info |  |
+| disk_free_gib | 834.54 | info |  |
 | G26-AR_status | BLOCKED | review |  |
 | G26-AR_download_s |  | info |  |
 | G26-AR_load_s |  | info |  |

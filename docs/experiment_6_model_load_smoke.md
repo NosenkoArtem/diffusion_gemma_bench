@@ -44,7 +44,7 @@ MODEL_LOAD_MAX_MODEL_LEN = 512
 MODEL_LOAD_GPU_MEMORY_UTILIZATION = 0.82
 MODEL_LOAD_ENABLE_DOWNLOAD = True
 MODEL_LOAD_ENABLE_LOAD = True
-INSTALL_CUDA13_RUNTIME_FOR_VLLM = True
+INSTALL_CUDA13_RUNTIME_FOR_VLLM = False
 CUDA13_RUNTIME_PIP_SPEC = "nvidia-cuda-runtime-cu13"
 ```
 
@@ -74,18 +74,20 @@ ImportError: libcudart.so.13: cannot open shared object file
 
 означает, что vLLM установлен в варианте, ожидающем CUDA 13 runtime library, но динамический загрузчик Python-процесса ее не видит. Это не OOM и не проблема размера модели.
 
-Ячейка Experiment 6 по умолчанию делает:
+Не включай автоматическую установку `nvidia-cuda-runtime-cu13` как основной путь: в Colab/pip этот пакет может подтянуться как source-package `0.0.1` и упасть на сборке wheel. Поэтому по умолчанию:
 
 ```python
-pip install -U nvidia-cuda-runtime-cu13
+INSTALL_CUDA13_RUNTIME_FOR_VLLM = False
 ```
 
-а фаза `model-load-smoke` перед импортом vLLM:
+Фаза `model-load-smoke` перед импортом vLLM сама:
 
 - ищет `nvidia/*/lib` внутри active site-packages;
 - добавляет эти директории в `LD_LIBRARY_PATH`;
 - пытается preload `libcudart.so.13` через `ctypes.CDLL`;
 - записывает диагностику в `results/model_load_smoke.json` в поле `cuda_runtime`.
+
+Если `cuda_runtime.libcudart_so_13_candidates` пустой, текущий vLLM wheel несовместим с CUDA runtime в active Colab environment. Следующий инженерный шаг - переустановить vLLM/torch в совместимой CUDA-сборке или выбрать backend, который поддерживает текущую CUDA runtime, а не менять `max_model_len`.
 
 После такой правки повторный запуск обычно не скачивает модель заново: HF cache уже содержит GGUF-файл.
 

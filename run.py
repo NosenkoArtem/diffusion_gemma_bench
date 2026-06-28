@@ -52,6 +52,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--targets", default="G26-AR", help="Comma-separated model ids for model-load-smoke")
     parser.add_argument("--download", action="store_true", help="Allow model-load-smoke to download/cache model artifacts")
     parser.add_argument("--load", action="store_true", help="Allow model-load-smoke to instantiate a vLLM engine")
+    parser.add_argument("--dry-run", action="store_true", help="Allow model-load-smoke to write diagnostics without download/load")
     parser.add_argument("--max-model-len", type=int, default=512, help="Conservative vLLM context length for model-load-smoke")
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.82, help="vLLM GPU memory utilization for model-load-smoke")
     return parser.parse_args(argv)
@@ -94,6 +95,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "model-load-smoke":
         if not args.confirm_go:
             raise SystemExit("model-load-smoke requires --confirm-go because it may download large files and allocate GPU memory.")
+        if not (args.download or args.load or args.dry_run):
+            raise SystemExit("model-load-smoke requires --download/--load for a real run, or --dry-run for diagnostics only.")
         result = run_model_load_smoke(
             args.profile,
             targets=tuple(item.strip() for item in args.targets.split(",") if item.strip()),

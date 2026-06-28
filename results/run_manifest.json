@@ -1,13 +1,13 @@
 {
   "git": {
     "branch": "main",
-    "commit_sha": "3066ed5a5334c7426803632a2a9d444409473934",
+    "commit_sha": "d888b36507b7c2b25ffb93192a68dc0919fe418b",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "3066ed5a"
+    "short_commit_sha": "d888b365"
   },
-  "phase": "model-load-smoke",
-  "profile": "q6_core_native",
-  "run_id": "model-load-smoke-20260628T202802Z-14101a",
-  "started_at": "2026-06-28T20:28:02+00:00"
+  "phase": "preflight",
+  "profile": "auto",
+  "run_id": "fixed-run",
+  "started_at": "2026-06-28T20:50:17+00:00"
 }
