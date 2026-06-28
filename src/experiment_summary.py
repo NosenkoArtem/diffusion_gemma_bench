@@ -8,6 +8,7 @@ read in Google Drive, GitHub, or a notebook output cell.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -49,7 +50,16 @@ def write_experiment_summary(
     ensure_dir(reports_dir)
     write_json(reports_dir / "experiment_summary.json", payload)
     (reports_dir / "experiment_summary.md").write_text(render_markdown(payload), encoding="utf-8")
+    slug = safe_phase_slug(phase)
+    write_json(reports_dir / f"experiment_summary_{slug}.json", payload)
+    (reports_dir / f"experiment_summary_{slug}.md").write_text(render_markdown(payload), encoding="utf-8")
     return payload
+
+
+def safe_phase_slug(phase: str) -> str:
+    """Return a filesystem-safe suffix for phase-specific summaries."""
+
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", phase).strip("_") or "unknown"
 
 
 def render_markdown(summary: dict[str, Any]) -> str:

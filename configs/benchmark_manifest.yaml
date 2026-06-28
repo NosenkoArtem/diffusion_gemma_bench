@@ -49,6 +49,19 @@ phases:
       - hf_token_present
       - model_repo_metadata_access
       - expected_profile_artifacts_visible
+  vllm_setup:
+    command: python run.py --profile <selected_profile> --phase vllm-setup
+    requires:
+      - model_gate
+    writes:
+      - results/vllm_setup.json
+      - reports/experiment_summary.md
+      - reports/experiment_summary.json
+    checks:
+      - gpu_visible_after_install
+      - torch_importable_after_install
+      - vllm_importable_after_install
+      - huggingface_hub_importable_after_install
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:

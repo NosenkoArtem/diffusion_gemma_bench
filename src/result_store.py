@@ -46,6 +46,7 @@ ALLOWED_ROOT_RESULTS = (
     "backend_capability.json",
     "backend_server_smoke.json",
     "model_gate.json",
+    "vllm_setup.json",
     "BLOCKED_HARDWARE.json",
     "BLOCKED_BACKEND.json",
 )
@@ -55,6 +56,10 @@ ALLOWED_REPORTS = (
     "final_report.html",
     "experiment_summary.md",
     "experiment_summary.json",
+    "experiment_summary_model-gate.md",
+    "experiment_summary_model-gate.json",
+    "experiment_summary_vllm-setup.md",
+    "experiment_summary_vllm-setup.json",
 )
 
 MAX_COMMIT_FILE_BYTES = 5 * 1024 * 1024

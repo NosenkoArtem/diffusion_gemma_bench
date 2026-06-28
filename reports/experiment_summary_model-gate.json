@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    "results/model_gate.json",
+    "reports/experiment_summary.md",
+    "reports/experiment_summary.json"
+  ],
+  "conclusion": "Install or repair vLLM in the Colab runtime, then rerun model-gate.",
+  "criteria": [
+    {
+      "criterion": "GPU is visible and has at least 24 GiB VRAM",
+      "note": {
+        "available": false
+      },
+      "passed": false
+    },
+    {
+      "criterion": "At least 55 GiB disk is free",
+      "note": {
+        "free_gib": 835.44,
+        "min_required_gib": 55
+      },
+      "passed": true
+    },
+    {
+      "criterion": "vLLM is importable",
+      "note": null,
+      "passed": false
+    },
+    {
+      "criterion": "HF token and model repo metadata are accessible",
+      "note": "",
+      "passed": false
+    },
+    {
+      "criterion": "Expected profile artifacts are visible",
+      "note": "",
+      "passed": true
+    }
+  ],
+  "metrics": [
+    {
+      "metric": "gate_status",
+      "note": "no_gpu_detected, vllm_not_importable, huggingface_hub_not_importable, hf_token_missing",
+      "status": "MODEL_GATE_NEEDS_SETUP",
+      "value": "MODEL_GATE_NEEDS_SETUP"
+    },
+    {
+      "metric": "gpu_available",
+      "note": null,
+      "status": "blocked",
+      "value": false
+    },
+    {
+      "metric": "gpu_total_vram_gib",
+      "note": "model smoke floor is 24 GiB",
+      "status": "info",
+      "value": null
+    },
+    {
+      "metric": "disk_free_gib",
+      "note": "minimum 55 GiB",
+      "status": "ok",
+      "value": 835.44
+    },
+    {
+      "metric": "vllm_importable",
+      "note": null,
+      "status": "blocked",
+      "value": false
+    },
+    {
+      "metric": "hf_token_present",
+      "note": "",
+      "status": "blocked",
+      "value": false
+    },
+    {
+      "metric": "DG-Native_repo_access",
+      "note": "unsloth/diffusiongemma-26B-A4B-it-GGUF",
+      "status": "blocked",
+      "value": null
+    },
+    {
+      "metric": "DG-Native_expected_file",
+      "note": "diffusiongemma-26B-A4B-it-Q6_K.gguf",
+      "status": "unknown_or_blocked",
+      "value": null
+    },
+    {
+      "metric": "G26-AR_repo_access",
+      "note": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "status": "blocked",
+      "value": null
+    },
+    {
+      "metric": "G26-AR_expected_file",
+      "note": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "status": "unknown_or_blocked",
+      "value": null
+    },
+    {
+      "metric": "G26-MTP_repo_access",
+      "note": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "status": "blocked",
+      "value": null
+    },
+    {
+      "metric": "G26-MTP_expected_file",
+      "note": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "status": "unknown_or_blocked",
+      "value": null
+    }
+  ],
+  "objective": "Check whether the current Colab Pro+ runtime can move from harness smoke tests to real model smoke tests without downloading 26B weights.",
+  "phase": "model-gate",
+  "profile": "q6_core_native",
+  "tasks": [
+    "Capture runtime GPU, disk, package, and git metadata.",
+    "Check Hugging Face token presence and model repository metadata access.",
+    "Check expected profile artifact visibility for DG-Native, G26-AR, and G26-MTP.",
+    "Check vLLM importability as the primary backend gate.",
+    "Record blockers and next-step decision for the model-smoke phase."
+  ],
+  "timestamp": "2026-06-28T11:10:28+00:00",
+  "title": "Experiment 3: Model Access and Backend Feasibility Gate"
+}

@@ -19,6 +19,7 @@ from src.backend_smoke import run_backend_smoke
 from src.model_gate import run_model_gate
 from src.preflight import run_preflight
 from src.reporting import generate_report
+from src.vllm_setup import run_vllm_setup
 from src.utils import RESULTS_DIR, append_jsonl, project_path, write_json
 
 
@@ -27,6 +28,7 @@ PHASES = {
     "backend-check",
     "backend-smoke",
     "model-gate",
+    "vllm-setup",
     "smoke",
     "pilot",
     "core",
@@ -68,6 +70,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.phase == "model-gate":
         result = run_model_gate(args.profile)
         print_model_gate_summary(result)
+        return 0
+
+    if args.phase == "vllm-setup":
+        result = run_vllm_setup(args.profile)
+        print_vllm_setup_summary(result)
         return 0
 
     if args.phase == "report":
@@ -169,6 +176,17 @@ def print_model_gate_summary(result: dict[str, Any]) -> None:
             f"expected_file_visible={model.get('expected_file_visible')} "
             f"expected_filename={model.get('expected_filename')}"
         )
+    print(f"next_step: {result['next_step']}")
+
+
+def print_vllm_setup_summary(result: dict[str, Any]) -> None:
+    """Compact vLLM setup summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"reasons: {result['reasons']}")
+    print(f"gpu: {result['gpu']}")
+    print(f"packages: {result['packages']}")
+    print(f"vllm_import: {result['vllm_import']}")
     print(f"next_step: {result['next_step']}")
 
 

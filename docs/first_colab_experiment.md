@@ -18,6 +18,9 @@ kernel + GitHub checkout + локальные тесты + запись резу
 - `model-gate` пишет `results/model_gate.json`;
 - `model-gate` создаёт `reports/experiment_summary.md` и
   `reports/experiment_summary.json`;
+- `vllm-setup` пишет `results/vllm_setup.json`;
+- `vllm-setup` создаёт отдельные summary-файлы
+  `reports/experiment_summary_vllm-setup.md/json`;
 - placeholder `smoke` пишет `PENDING_COLAB_BACKEND_GATE`;
 - `report` создаёт `reports/final_report.md`;
 - маленькие артефакты упакованы в `results/runs/<RUN_ID>/`;
@@ -153,6 +156,52 @@ python scripts/check_no_secrets.py
 - `results/model_gate.json`: машинно-читаемый gate-result;
 - `reports/experiment_summary.md`: человекочитаемое резюме эксперимента;
 - `reports/experiment_summary.json`: структурированная версия резюме.
+- `reports/experiment_summary_model-gate.md/json`: стабильная копия резюме
+  именно для model-gate, которая не перезаписывается следующими экспериментами.
+
+## Эксперимент 4: vLLM setup gate
+
+Цель эксперимента: установить или проверить `vllm` в текущем Colab runtime и
+понять, можно ли после этого повторить `model-gate` без backend blocker-а.
+
+Notebook-блок содержит флаги:
+
+```python
+RUN_EXPERIMENT_4 = True
+INSTALL_VLLM = True
+VLLM_PIP_SPEC = "vllm"
+```
+
+Если установка меняет базовые пакеты, Colab может попросить restart runtime.
+В этом случае после restart запусти notebook сверху до Experiment 4 и повтори
+блок с `INSTALL_VLLM = False`, чтобы только проверить уже установленную среду.
+
+Критерии успеха:
+
+- GPU доступна после установки;
+- `torch` импортируется;
+- `vllm` импортируется;
+- `huggingface_hub` импортируется;
+- повторный `model-gate` больше не содержит blocker `vllm_not_importable`.
+
+Артефакты:
+
+- `results/vllm_setup.json`;
+- `reports/experiment_summary_vllm-setup.md`;
+- `reports/experiment_summary_vllm-setup.json`;
+- повторно обновлённый `results/model_gate.json`.
+
+## Передача результатов из Google Drive в локальный workspace
+
+После финальной Drive-ячейки notebook печатает `saved_dir` и `saved_zip`.
+Для локального анализа скачай или синхронизируй run-директорию в:
+
+```text
+external_results/<RUN_ID>/
+```
+
+Содержимое `external_results/` игнорируется Git, кроме `README.md`. Это
+безопасная рабочая зона для анализа артефактов без коммита больших результатов.
 
 ## Ожидаемые статусы
 

@@ -13,5 +13,7 @@ results/*_raw.jsonl
 results/runs/
 reports/figures/*
 dist/*.zip
+external_results/*
+!external_results/README.md
 configs/experiment.env
 .env
