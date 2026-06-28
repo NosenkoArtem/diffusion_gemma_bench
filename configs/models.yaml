@@ -19,15 +19,15 @@ models:
     repo_id: unsloth/gemma-4-26B-A4B-it-qat-GGUF
     base_tokenizer: google/gemma-4-26B-A4B-it
     filenames:
-      q8_calibration: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
-      q6_core_native: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
-      q5_core_native: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
-      q4_pilot: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+      q8_calibration: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
+      q6_core_native: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
+      q5_core_native: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
+      q4_pilot: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
     hf_aliases:
       q8_calibration: UD-Q4_K_XL
       q6_core_native: UD-Q4_K_XL
       q5_core_native: UD-Q4_K_XL
-      q4_pilot: UD-Q4_K_M
+      q4_pilot: UD-Q4_K_XL
     deployment:
       backend: vllm
       speculative_decoding: false
