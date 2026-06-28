@@ -36,6 +36,30 @@ class ArtifactDiscoveryTests(unittest.TestCase):
         self.assertEqual(reasons, ["hf_token_missing"])
         self.assertIn("Load HF_TOKEN", next_step("ARTIFACT_DISCOVERY_NEEDS_REVIEW", reasons))
 
+    def test_expired_token_is_reported_before_candidate_review(self):
+        reasons = blocking_reasons(
+            [
+                {
+                    "model_id": "DG-Native",
+                    "best_candidate": None,
+                    "error_type": "search_failed",
+                    "search_errors": [
+                        {
+                            "error_type": "HfHubHTTPError",
+                            "error": "401 Unauthorized. User Access Token is expired.",
+                        }
+                    ],
+                    "candidate_repos": [],
+                }
+            ],
+            hf_token_present=True,
+            hf_hub_available=True,
+            enable_search=True,
+        )
+
+        self.assertEqual(reasons, ["hf_token_invalid"])
+        self.assertIn("Refresh the Hugging Face token", next_step("ARTIFACT_DISCOVERY_NEEDS_REVIEW", reasons))
+
 
 if __name__ == "__main__":
     unittest.main()

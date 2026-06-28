@@ -209,6 +209,10 @@ def blocking_reasons(models: list[dict[str, Any]], hf_token_present: bool, hf_hu
     if not prerequisites_ok:
         return unique(reasons)
 
+    if any(model_has_auth_error(model) for model in models):
+        reasons.append("hf_token_invalid")
+        return unique(reasons)
+
     if any(model.get("error_type") for model in models):
         reasons.append("model_search_failed")
     if any(not model.get("best_candidate") for model in models):
@@ -290,6 +294,8 @@ def next_step(status: str, reasons: list[str]) -> str:
         return "Artifact discovery passed: update configs/models.yaml with confirmed repo ids/files, rerun model-gate, then attempt minimal model-load smoke."
     if "hf_token_missing" in reasons:
         return "Load HF_TOKEN/HUGGING_FACE_HUB_TOKEN and rerun artifact-discovery."
+    if "hf_token_invalid" in reasons:
+        return "Refresh the Hugging Face token or grant it access to gated model repos, then rerun artifact-discovery."
     if "huggingface_hub_not_importable" in reasons:
         return "Install huggingface_hub in the active runtime and rerun artifact-discovery."
     if "search_disabled" in reasons:
@@ -311,6 +317,29 @@ def unique(items: list[str] | tuple[str, ...]) -> list[str]:
             seen.add(item)
             out.append(item)
     return out
+
+
+def model_has_auth_error(model: dict[str, Any]) -> bool:
+    """Return True when HF responses indicate an expired or unauthorized token."""
+
+    records = list(model.get("search_errors", [])) + list(model.get("candidate_repos", []))
+    return any(is_auth_error(record) for record in records)
+
+
+def is_auth_error(record: dict[str, Any]) -> bool:
+    """Classify token/access failures separately from missing model candidates."""
+
+    text = f"{record.get('error_type', '')} {record.get('error', '')}".lower()
+    auth_markers = (
+        "401",
+        "unauthorized",
+        "access token",
+        "token is expired",
+        "expired",
+        "invalid token",
+        "make sure you are authenticated",
+    )
+    return any(marker in text for marker in auth_markers)
 
 
 def safe_error(exc: Exception) -> str:
