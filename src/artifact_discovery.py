@@ -11,7 +11,7 @@ import os
 from typing import Any
 
 from .experiment_summary import write_experiment_summary
-from .model_gate import expected_profile_filename, module_version, select_candidate_files
+from .model_gate import expected_profile_alias, expected_profile_filename, module_version, select_candidate_files
 from .utils import RESULTS_DIR, git_revision, load_yaml, project_path, utc_now_iso, write_json
 
 
@@ -20,9 +20,9 @@ MAX_INSPECTED_REPOS_PER_MODEL = 12
 
 
 DISCOVERY_QUERIES = {
-    "DG-Native": ("diffusiongemma", "diffusiongemma 26B", "diffusion-gemma"),
-    "G26-AR": ("gemma-4-26B-A4B", "gemma 4 26B A4B", "gemma-4-26b"),
-    "G26-MTP": ("gemma-4-26B-A4B assistant", "gemma 4 26B A4B assistant", "gemma mtp assistant"),
+    "DG-Native": ("unsloth/diffusiongemma-26B-A4B-it-GGUF", "google/diffusiongemma-26B-A4B-it", "diffusiongemma 26B A4B"),
+    "G26-AR": ("unsloth/gemma-4-26B-A4B-it-qat-GGUF", "google/gemma-4-26B-A4B-it", "gemma 4 26B A4B qat GGUF"),
+    "G26-MTP": ("unsloth/gemma-4-26B-A4B-it-qat-GGUF", "google/gemma-4-26B-A4B-it", "gemma 4 26B A4B MTP"),
 }
 
 
@@ -67,6 +67,7 @@ def discover_model_artifacts(
 
     configured_repo_id = cfg.get("repo_id")
     expected_filename = expected_profile_filename(cfg, profile)
+    expected_alias = expected_profile_alias(cfg, profile)
     queries = list(DISCOVERY_QUERIES.get(model_id, (model_id,)))
     if configured_repo_id:
         queries.insert(0, configured_repo_id)
@@ -79,10 +80,12 @@ def discover_model_artifacts(
         "role": cfg.get("role"),
         "configured_repo_id": configured_repo_id,
         "expected_filename": expected_filename,
+        "expected_alias": expected_alias,
         "queries": unique(queries),
         "search_enabled": enable_search,
         "candidate_repos": [],
         "best_candidate": None,
+        "search_errors": [],
         "error_type": None,
     }
     if not hf_token_present:
@@ -99,21 +102,30 @@ def discover_model_artifacts(
         from huggingface_hub import HfApi
 
         api = HfApi()
-        repo_ids = search_repo_ids(api, record["queries"])
         candidates = []
+        if configured_repo_id:
+            candidates.append(inspect_repo_files(api, configured_repo_id, expected_filename))
+        repo_ids, search_errors = search_repo_ids(api, record["queries"])
+        record["search_errors"] = search_errors
         for repo_id in repo_ids[:MAX_INSPECTED_REPOS_PER_MODEL]:
+            if repo_id == configured_repo_id:
+                continue
             candidates.append(inspect_repo_files(api, repo_id, expected_filename))
         record["candidate_repos"] = candidates
         record["best_candidate"] = choose_best_candidate(candidates)
+        if search_errors and not repo_ids:
+            record["error_type"] = "search_failed"
     except Exception as exc:
         record["error_type"] = type(exc).__name__
+        record["error"] = safe_error(exc)
     return record
 
 
-def search_repo_ids(api: Any, queries: list[str]) -> list[str]:
-    """Search HF model ids for multiple query strings."""
+def search_repo_ids(api: Any, queries: list[str]) -> tuple[list[str], list[dict[str, str]]]:
+    """Search HF model ids for multiple query strings and collect per-query errors."""
 
     repo_ids: list[str] = []
+    errors: list[dict[str, str]] = []
     for query in queries:
         try:
             models = api.list_models(search=query, limit=SEARCH_LIMIT_PER_QUERY)
@@ -122,12 +134,17 @@ def search_repo_ids(api: Any, queries: list[str]) -> list[str]:
                 if repo_id:
                     repo_ids.append(repo_id)
         except TypeError:
-            models = api.list_models(filter=query, limit=SEARCH_LIMIT_PER_QUERY)
-            for model in models:
-                repo_id = getattr(model, "modelId", None) or getattr(model, "id", None)
-                if repo_id:
-                    repo_ids.append(repo_id)
-    return unique(repo_ids)
+            try:
+                models = api.list_models(filter=query, limit=SEARCH_LIMIT_PER_QUERY)
+                for model in models:
+                    repo_id = getattr(model, "modelId", None) or getattr(model, "id", None)
+                    if repo_id:
+                        repo_ids.append(repo_id)
+            except Exception as exc:
+                errors.append({"query": query, "error_type": type(exc).__name__, "error": safe_error(exc)})
+        except Exception as exc:
+            errors.append({"query": query, "error_type": type(exc).__name__, "error": safe_error(exc)})
+    return unique(repo_ids), errors
 
 
 def inspect_repo_files(api: Any, repo_id: str, expected_filename: str | None) -> dict[str, Any]:
@@ -149,7 +166,7 @@ def inspect_repo_files(api: Any, repo_id: str, expected_filename: str | None) ->
             "weight_file_count": sum(1 for name in files if name.endswith((".gguf", ".safetensors", ".bin"))),
         }
     except Exception as exc:
-        return {"repo_id": repo_id, "repo_access_ok": False, "error_type": type(exc).__name__}
+        return {"repo_id": repo_id, "repo_access_ok": False, "error_type": type(exc).__name__, "error": safe_error(exc)}
 
 
 def choose_best_candidate(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -212,6 +229,14 @@ def write_artifact_discovery_summary(result: dict[str, Any]) -> dict[str, Any]:
                 "note": model.get("error_type") or "",
             }
         )
+        metrics.append(
+            {
+                "metric": f"{model['model_id']}_search_error_count",
+                "value": len(model.get("search_errors", [])),
+                "status": "info",
+                "note": first_error_note(model.get("search_errors", [])),
+            }
+        )
     criteria = [
         {"criterion": "HF token is loaded", "passed": "hf_token_missing" not in result["reasons"], "note": ""},
         {"criterion": "Hugging Face search can run", "passed": "model_search_failed" not in result["reasons"], "note": ""},
@@ -260,3 +285,22 @@ def unique(items: list[str] | tuple[str, ...]) -> list[str]:
             seen.add(item)
             out.append(item)
     return out
+
+
+def safe_error(exc: Exception) -> str:
+    """Return a short, token-safe error message for reports."""
+
+    text = str(exc).replace("\n", " ")
+    for marker in ("hf_", "Bearer "):
+        if marker in text:
+            text = text.split(marker)[0] + "[redacted]"
+    return text[:500]
+
+
+def first_error_note(errors: list[dict[str, str]]) -> str:
+    """Return the first query error as a compact table note."""
+
+    if not errors:
+        return ""
+    first = errors[0]
+    return f"{first.get('query')}: {first.get('error_type')}"

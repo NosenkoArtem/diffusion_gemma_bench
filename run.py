@@ -210,7 +210,7 @@ def print_artifact_discovery_summary(result: dict[str, Any]) -> None:
             "model: "
             f"{model['model_id']} candidates={len(model.get('candidate_repos', []))} "
             f"best_repo={best.get('repo_id')} expected_file_visible={best.get('expected_file_visible')} "
-            f"error={model.get('error_type')}"
+            f"error={model.get('error_type')} search_errors={len(model.get('search_errors', []))}"
         )
     print(f"next_step: {result['next_step']}")
 

@@ -16,7 +16,7 @@
     {
       "criterion": "At least 55 GiB disk is free",
       "note": {
-        "free_gib": 836.11,
+        "free_gib": 833.92,
         "min_required_gib": 55
       },
       "passed": true
@@ -60,7 +60,7 @@
       "metric": "disk_free_gib",
       "note": "minimum 55 GiB",
       "status": "ok",
-      "value": 836.11
+      "value": 833.92
     },
     {
       "metric": "vllm_importable",
@@ -88,25 +88,25 @@
     },
     {
       "metric": "G26-AR_repo_access",
-      "note": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "note": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
       "status": "blocked",
       "value": null
     },
     {
       "metric": "G26-AR_expected_file",
-      "note": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "note": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf",
       "status": "unknown_or_blocked",
       "value": null
     },
     {
       "metric": "G26-MTP_repo_access",
-      "note": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "note": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
       "status": "blocked",
       "value": null
     },
     {
       "metric": "G26-MTP_expected_file",
-      "note": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "note": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf",
       "status": "unknown_or_blocked",
       "value": null
     }
@@ -121,6 +121,6 @@
     "Check vLLM importability as the primary backend gate.",
     "Record blockers and next-step decision for the model-smoke phase."
   ],
-  "timestamp": "2026-06-28T13:55:26+00:00",
+  "timestamp": "2026-06-28T14:12:03+00:00",
   "title": "Experiment 3: Model Access and Backend Feasibility Gate"
 }

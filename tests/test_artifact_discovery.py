@@ -11,6 +11,7 @@ class ArtifactDiscoveryTests(unittest.TestCase):
         self.assertEqual(result["status"], "ARTIFACT_DISCOVERY_NEEDS_REVIEW")
         self.assertIn("search_disabled", result["reasons"])
         self.assertEqual({model["model_id"] for model in result["models"]}, {"DG-Native", "G26-AR", "G26-MTP"})
+        self.assertTrue(all("search_errors" in model for model in result["models"]))
         self.assertTrue(project_path("results", "artifact_discovery.json").exists())
         summary_path = project_path("reports", "experiment_summary_artifact-discovery.md")
         self.assertTrue(summary_path.exists())

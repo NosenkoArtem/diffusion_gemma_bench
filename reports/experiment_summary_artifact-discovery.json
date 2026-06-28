@@ -30,7 +30,7 @@
   "metrics": [
     {
       "metric": "discovery_status",
-      "note": "hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing",
+      "note": "hf_token_missing, huggingface_hub_not_importable, search_disabled, model_search_failed, candidate_repo_missing",
       "status": "ARTIFACT_DISCOVERY_NEEDS_REVIEW",
       "value": "ARTIFACT_DISCOVERY_NEEDS_REVIEW"
     },
@@ -59,6 +59,12 @@
       "value": 0
     },
     {
+      "metric": "DG-Native_search_error_count",
+      "note": "",
+      "status": "info",
+      "value": 0
+    },
+    {
       "metric": "G26-AR_best_repo",
       "note": "expected_file_visible=None",
       "status": "missing",
@@ -67,6 +73,12 @@
     {
       "metric": "G26-AR_candidate_count",
       "note": "hf_token_missing",
+      "status": "info",
+      "value": 0
+    },
+    {
+      "metric": "G26-AR_search_error_count",
+      "note": "",
       "status": "info",
       "value": 0
     },
@@ -81,6 +93,12 @@
       "note": "hf_token_missing",
       "status": "info",
       "value": 0
+    },
+    {
+      "metric": "G26-MTP_search_error_count",
+      "note": "",
+      "status": "info",
+      "value": 0
     }
   ],
   "objective": "Find correct Hugging Face repositories and visible weight files for the configured models without downloading large artifacts.",
@@ -92,6 +110,6 @@
     "Select best repo/file candidates for DG-Native, G26-AR, and G26-MTP.",
     "Produce a reviewable recommendation before editing model config."
   ],
-  "timestamp": "2026-06-28T13:55:24+00:00",
+  "timestamp": "2026-06-28T14:12:01+00:00",
   "title": "Experiment 5: Model Artifact Discovery"
 }

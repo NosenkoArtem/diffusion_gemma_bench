@@ -1,10 +1,10 @@
 {
   "git": {
     "branch": "main",
-    "commit_sha": "0f1eaa1023b7a85eee15be903567535c67530160",
+    "commit_sha": "e6d0a231d11d019c5d62c505a4e6f90dcf48f16f",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "0f1eaa10"
+    "short_commit_sha": "e6d0a231"
   },
   "hf_token": {
     "present": false
@@ -15,49 +15,51 @@
       "candidate_repos": [],
       "configured_repo_id": "unsloth/diffusiongemma-26B-A4B-it-GGUF",
       "error_type": "hf_token_missing",
+      "expected_alias": null,
       "expected_filename": "diffusiongemma-26B-A4B-it-Q6_K.gguf",
       "model_id": "DG-Native",
       "queries": [
         "unsloth/diffusiongemma-26B-A4B-it-GGUF",
-        "diffusiongemma",
-        "diffusiongemma 26B",
-        "diffusion-gemma"
+        "google/diffusiongemma-26B-A4B-it",
+        "diffusiongemma 26B A4B"
       ],
       "role": "primary_diffusion_model",
-      "search_enabled": true
+      "search_enabled": false,
+      "search_errors": []
     },
     {
       "best_candidate": null,
       "candidate_repos": [],
-      "configured_repo_id": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "configured_repo_id": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
       "error_type": "hf_token_missing",
-      "expected_filename": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "expected_alias": "UD-Q4_K_XL",
+      "expected_filename": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf",
       "model_id": "G26-AR",
       "queries": [
-        "unsloth/gemma-4-26B-A4B-it-GGUF",
-        "gemma-4-26B-A4B",
-        "gemma 4 26B A4B",
-        "gemma-4-26b"
+        "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
+        "google/gemma-4-26B-A4B-it",
+        "gemma 4 26B A4B qat GGUF"
       ],
       "role": "autoregressive_attribution_baseline",
-      "search_enabled": true
+      "search_enabled": false,
+      "search_errors": []
     },
     {
       "best_candidate": null,
       "candidate_repos": [],
-      "configured_repo_id": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "configured_repo_id": "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
       "error_type": "hf_token_missing",
-      "expected_filename": "gemma-4-26B-A4B-it-UD-Q6_K.gguf",
+      "expected_alias": "UD-Q4_K_XL",
+      "expected_filename": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf",
       "model_id": "G26-MTP",
       "queries": [
-        "unsloth/gemma-4-26B-A4B-it-GGUF",
-        "gemma-4-26B-A4B assistant",
-        "gemma 4 26B A4B assistant",
-        "gemma mtp assistant",
-        "google/gemma-4-26B-A4B-it-assistant"
+        "unsloth/gemma-4-26B-A4B-it-qat-GGUF",
+        "google/gemma-4-26B-A4B-it",
+        "gemma 4 26B A4B MTP"
       ],
       "role": "primary_gemma_practical_profile",
-      "search_enabled": true
+      "search_enabled": false,
+      "search_errors": []
     }
   ],
   "next_step": "Review Hugging Face search queries and model naming; no accessible candidate repo was found for at least one model.",
@@ -69,9 +71,10 @@
   "reasons": [
     "hf_token_missing",
     "huggingface_hub_not_importable",
+    "search_disabled",
     "model_search_failed",
     "candidate_repo_missing"
   ],
   "status": "ARTIFACT_DISCOVERY_NEEDS_REVIEW",
-  "timestamp": "2026-06-28T13:55:24+00:00"
+  "timestamp": "2026-06-28T14:12:01+00:00"
 }

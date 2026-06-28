@@ -2,10 +2,10 @@
   "cuda_visible_devices": null,
   "git": {
     "branch": "main",
-    "commit_sha": "0f1eaa1023b7a85eee15be903567535c67530160",
+    "commit_sha": "e6d0a231d11d019c5d62c505a4e6f90dcf48f16f",
     "dirty": true,
     "is_git_checkout": true,
-    "short_commit_sha": "0f1eaa10"
+    "short_commit_sha": "e6d0a231"
   },
   "gpu": {
     "available": false
@@ -30,7 +30,7 @@
     "huggingface_hub_not_importable"
   ],
   "status": "VLLM_SETUP_NEEDS_SETUP",
-  "timestamp": "2026-06-28T13:55:26+00:00",
+  "timestamp": "2026-06-28T14:12:03+00:00",
   "vllm_import": {
     "error": "No module named 'vllm'",
     "error_type": "ModuleNotFoundError",

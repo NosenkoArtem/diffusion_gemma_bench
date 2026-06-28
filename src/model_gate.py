@@ -63,11 +63,13 @@ def inspect_model(model_id: str, cfg: dict[str, Any], profile: str, hf_token_pre
 
     repo_id = cfg.get("repo_id")
     expected_filename = expected_profile_filename(cfg, profile)
+    expected_alias = expected_profile_alias(cfg, profile)
     record: dict[str, Any] = {
         "model_id": model_id,
         "role": cfg.get("role"),
         "repo_id": repo_id,
         "expected_filename": expected_filename,
+        "expected_alias": expected_alias,
         "repo_access_ok": None,
         "expected_file_visible": None,
         "visible_file_count": None,
@@ -106,24 +108,33 @@ def inspect_model(model_id: str, cfg: dict[str, Any], profile: str, hf_token_pre
 
     assistant = cfg.get("assistant")
     if isinstance(assistant, dict) and assistant.get("repo_id"):
-        record["assistant"] = inspect_assistant_repo(assistant["repo_id"], hf_token_present)
+        record["assistant"] = inspect_assistant_repo(assistant["repo_id"], hf_token_present, assistant.get("filename"))
     return record
 
 
-def inspect_assistant_repo(repo_id: str, hf_token_present: bool) -> dict[str, Any]:
+def inspect_assistant_repo(repo_id: str, hf_token_present: bool, expected_filename: str | None = None) -> dict[str, Any]:
     """Inspect the MTP assistant repository metadata without downloads."""
 
     if not hf_token_present:
-        return {"repo_id": repo_id, "repo_access_ok": None, "error_type": "hf_token_missing"}
+        return {"repo_id": repo_id, "expected_filename": expected_filename, "repo_access_ok": None, "error_type": "hf_token_missing"}
     if module_version("huggingface_hub") is None:
-        return {"repo_id": repo_id, "repo_access_ok": None, "error_type": "huggingface_hub_not_importable"}
+        return {"repo_id": repo_id, "expected_filename": expected_filename, "repo_access_ok": None, "error_type": "huggingface_hub_not_importable"}
     try:
         from huggingface_hub import HfApi
 
-        info = HfApi().model_info(repo_id)
-        return {"repo_id": repo_id, "repo_access_ok": True, "sha": getattr(info, "sha", None), "gated": getattr(info, "gated", None)}
+        api = HfApi()
+        info = api.model_info(repo_id)
+        files = api.list_repo_files(repo_id=repo_id, repo_type="model")
+        return {
+            "repo_id": repo_id,
+            "expected_filename": expected_filename,
+            "expected_file_visible": expected_filename in files if expected_filename else None,
+            "repo_access_ok": True,
+            "sha": getattr(info, "sha", None),
+            "gated": getattr(info, "gated", None),
+        }
     except Exception as exc:
-        return {"repo_id": repo_id, "repo_access_ok": False, "error_type": type(exc).__name__}
+        return {"repo_id": repo_id, "expected_filename": expected_filename, "repo_access_ok": False, "error_type": type(exc).__name__}
 
 
 def expected_profile_filename(cfg: dict[str, Any], profile: str) -> str | None:
@@ -139,6 +150,22 @@ def expected_profile_filename(cfg: dict[str, Any], profile: str) -> str | None:
         target_files = target.get("filenames", {})
         if isinstance(target_files, dict):
             return target_files.get(profile)
+    return None
+
+
+def expected_profile_alias(cfg: dict[str, Any], profile: str) -> str | None:
+    """Return an HF alias used by repositories that expose quant aliases."""
+
+    aliases = cfg.get("hf_aliases")
+    if isinstance(aliases, dict):
+        return aliases.get(profile)
+    target_ref = cfg.get("target_model_ref")
+    if target_ref:
+        models = load_yaml(project_path("configs", "models.yaml")).get("models", {})
+        target = models.get(target_ref, {})
+        target_aliases = target.get("hf_aliases", {})
+        if isinstance(target_aliases, dict):
+            return target_aliases.get(profile)
     return None
 
 

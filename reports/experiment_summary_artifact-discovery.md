@@ -2,7 +2,7 @@
 
 - Phase: `artifact-discovery`
 - Profile: `q6_core_native`
-- Timestamp: `2026-06-28T13:55:24+00:00`
+- Timestamp: `2026-06-28T14:12:01+00:00`
 
 ## Objective
 
@@ -19,15 +19,18 @@ Find correct Hugging Face repositories and visible weight files for the configur
 
 | metric | value | status | note |
 | --- | --- | --- | --- |
-| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing |
+| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, search_disabled, model_search_failed, candidate_repo_missing |
 | hf_token_present | no | blocked |  |
 | huggingface_hub_version |  | blocked |  |
 | DG-Native_best_repo |  | missing | expected_file_visible=None |
 | DG-Native_candidate_count | 0 | info | hf_token_missing |
+| DG-Native_search_error_count | 0 | info |  |
 | G26-AR_best_repo |  | missing | expected_file_visible=None |
 | G26-AR_candidate_count | 0 | info | hf_token_missing |
+| G26-AR_search_error_count | 0 | info |  |
 | G26-MTP_best_repo |  | missing | expected_file_visible=None |
 | G26-MTP_candidate_count | 0 | info | hf_token_missing |
+| G26-MTP_search_error_count | 0 | info |  |
 
 ## Success Criteria
 

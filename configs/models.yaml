@@ -16,13 +16,18 @@ models:
 
   G26-AR:
     role: autoregressive_attribution_baseline
-    repo_id: unsloth/gemma-4-26B-A4B-it-GGUF
+    repo_id: unsloth/gemma-4-26B-A4B-it-qat-GGUF
     base_tokenizer: google/gemma-4-26B-A4B-it
     filenames:
-      q8_calibration: gemma-4-26B-A4B-it-Q8_0.gguf
-      q6_core_native: gemma-4-26B-A4B-it-UD-Q6_K.gguf
-      q5_core_native: gemma-4-26B-A4B-it-UD-Q5_K_M.gguf
+      q8_calibration: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
+      q6_core_native: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
+      q5_core_native: gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf
       q4_pilot: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+    hf_aliases:
+      q8_calibration: UD-Q4_K_XL
+      q6_core_native: UD-Q4_K_XL
+      q5_core_native: UD-Q4_K_XL
+      q4_pilot: UD-Q4_K_M
     deployment:
       backend: vllm
       speculative_decoding: false
@@ -31,11 +36,12 @@ models:
 
   G26-MTP:
     role: primary_gemma_practical_profile
-    repo_id: unsloth/gemma-4-26B-A4B-it-GGUF
+    repo_id: unsloth/gemma-4-26B-A4B-it-qat-GGUF
     base_tokenizer: google/gemma-4-26B-A4B-it
     target_model_ref: G26-AR
     assistant:
-      repo_id: google/gemma-4-26B-A4B-it-assistant
+      repo_id: unsloth/gemma-4-26B-A4B-it-qat-GGUF
+      filename: mtp-gemma-4-26B-A4B-it.gguf
       precision: bfloat16
       method: mtp
     deployment:

@@ -237,6 +237,18 @@ external_results/<RUN_ID>/
 - выбор best candidate per model;
 - создание reviewable recommendation перед правкой `configs/models.yaml`.
 
+Текущие source-of-truth ссылки для проверки:
+
+- `DG-Native` model repo: `https://huggingface.co/google/diffusiongemma-26B-A4B-it`;
+- `DG-Native` GGUF repo: `https://huggingface.co/unsloth/diffusiongemma-26B-A4B-it-GGUF`;
+- `G26-AR` model repo: `https://huggingface.co/google/gemma-4-26B-A4B-it`;
+- `G26-AR/G26-MTP` QAT GGUF repo:
+  `https://huggingface.co/unsloth/gemma-4-26B-A4B-it-qat-GGUF`.
+
+Для Gemma QAT GGUF текущий рабочий alias в конфиге: `UD-Q4_K_XL`.
+Для MTP drafter текущий ожидаемый файл:
+`mtp-gemma-4-26B-A4B-it.gguf`.
+
 Критерии успеха:
 
 - `HF_TOKEN` загружен;
