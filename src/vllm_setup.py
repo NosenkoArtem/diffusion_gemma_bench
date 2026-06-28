@@ -11,14 +11,20 @@ import importlib
 import os
 import platform
 import sys
+from pathlib import Path
 from typing import Any
 
 from .experiment_summary import write_experiment_summary
 from .preflight import nvidia_smi_summary, package_versions
-from .utils import RESULTS_DIR, git_revision, utc_now_iso, write_json
+from .utils import RESULTS_DIR, git_revision, project_path, utc_now_iso, write_json
 
 
-def run_vllm_setup(profile: str = "auto") -> dict[str, Any]:
+def run_vllm_setup(
+    profile: str = "auto",
+    *,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Check vLLM installation status and persist a setup report."""
 
     gpu = nvidia_smi_summary()
@@ -45,8 +51,8 @@ def run_vllm_setup(profile: str = "auto") -> dict[str, Any]:
         "git": git_revision(),
         "next_step": next_step(status, reasons),
     }
-    write_json(RESULTS_DIR / "vllm_setup.json", result)
-    write_vllm_setup_summary(result)
+    write_json(results_dir / "vllm_setup.json", result)
+    write_vllm_setup_summary(result, results_dir=results_dir, reports_dir=reports_dir)
     return result
 
 
@@ -85,7 +91,12 @@ def blocking_reasons(gpu: dict[str, Any], packages: dict[str, Any], import_statu
     return reasons
 
 
-def write_vllm_setup_summary(result: dict[str, Any]) -> dict[str, Any]:
+def write_vllm_setup_summary(
+    result: dict[str, Any],
+    *,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Write the per-experiment Markdown/JSON summary for Experiment 4."""
 
     metrics = [
@@ -118,6 +129,8 @@ def write_vllm_setup_summary(result: dict[str, Any]) -> dict[str, Any]:
         criteria=criteria,
         conclusion=result["next_step"],
         artifacts=["results/vllm_setup.json", "reports/experiment_summary.md", "reports/experiment_summary.json"],
+        results_dir=results_dir,
+        reports_dir=reports_dir or project_path("reports"),
     )
 
 

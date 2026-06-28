@@ -23,7 +23,12 @@ MIN_DISK_FREE_GIB = 55
 MIN_MODEL_SMOKE_VRAM_GIB = 24
 
 
-def run_model_gate(profile: str = "auto") -> dict[str, Any]:
+def run_model_gate(
+    profile: str = "auto",
+    *,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Run non-download model readiness checks and persist JSON/Markdown output."""
 
     models_config = load_yaml(project_path("configs", "models.yaml")).get("models", {})
@@ -53,8 +58,8 @@ def run_model_gate(profile: str = "auto") -> dict[str, Any]:
         "git": git_revision(),
         "next_step": next_step(status, reasons),
     }
-    write_json(RESULTS_DIR / "model_gate.json", result)
-    write_model_gate_summary(result)
+    write_json(results_dir / "model_gate.json", result)
+    write_model_gate_summary(result, results_dir=results_dir, reports_dir=reports_dir)
     return result
 
 
@@ -208,7 +213,12 @@ def blocking_reasons(
     return reasons
 
 
-def write_model_gate_summary(result: dict[str, Any]) -> dict[str, Any]:
+def write_model_gate_summary(
+    result: dict[str, Any],
+    *,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Write a per-experiment summary document for the model gate."""
 
     metrics = [
@@ -261,6 +271,8 @@ def write_model_gate_summary(result: dict[str, Any]) -> dict[str, Any]:
         criteria=criteria,
         conclusion=conclusion,
         artifacts=["results/model_gate.json", "reports/experiment_summary.md", "reports/experiment_summary.json"],
+        results_dir=results_dir,
+        reports_dir=reports_dir or project_path("reports"),
     )
 
 

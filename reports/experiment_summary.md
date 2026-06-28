@@ -1,47 +1,52 @@
-# Experiment 4: vLLM Backend Setup Gate
+# Experiment 5: Model Artifact Discovery
 
-- Phase: `vllm-setup`
+- Phase: `artifact-discovery`
 - Profile: `q6_core_native`
-- Timestamp: `2026-06-28T14:12:03+00:00`
+- Timestamp: `2026-06-28T18:16:40+00:00`
 
 ## Objective
 
-Verify that the Colab runtime can import vLLM and keep GPU/CUDA/Hugging Face dependencies usable before model loading.
+Find correct Hugging Face repositories and visible weight files for the configured models without downloading large artifacts.
 
 ## Tasks
 
-- Optionally install vLLM from the notebook with an explicit flag.
-- Capture Python, platform, GPU, and package versions after installation.
-- Import vLLM and record any error type/message without hiding setup failures.
-- Decide whether to rerun model-gate or repair the runtime first.
+- Search Hugging Face metadata for DiffusionGemma/Gemma candidate repositories.
+- Inspect visible files for candidate repos without downloading weights.
+- Select best repo/file candidates for DG-Native, G26-AR, and G26-MTP.
+- Produce a reviewable recommendation before editing model config.
 
 ## Metrics
 
 | metric | value | status | note |
 | --- | --- | --- | --- |
-| setup_status | VLLM_SETUP_NEEDS_SETUP | VLLM_SETUP_NEEDS_SETUP | no_gpu_detected, torch_not_importable, vllm_not_importable, huggingface_hub_not_importable |
-| gpu_available | no | blocked |  |
-| gpu_total_vram_gib |  | info |  |
-| torch_version |  | blocked |  |
-| vllm_importable | no | blocked | ModuleNotFoundError |
-| transformers_version |  | info |  |
+| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing |
+| hf_token_present | no | blocked |  |
 | huggingface_hub_version |  | blocked |  |
+| DG-Native_best_repo |  | missing | expected_file_visible=None |
+| DG-Native_candidate_count | 0 | info | hf_token_missing |
+| DG-Native_search_error_count | 0 | info |  |
+| G26-AR_best_repo |  | missing | expected_file_visible=None |
+| G26-AR_candidate_count | 0 | info | hf_token_missing |
+| G26-AR_search_error_count | 0 | info |  |
+| G26-MTP_best_repo |  | missing | expected_file_visible=None |
+| G26-MTP_candidate_count | 0 | info | hf_token_missing |
+| G26-MTP_search_error_count | 0 | info |  |
 
 ## Success Criteria
 
 | criterion | passed | note |
 | --- | --- | --- |
-| GPU is visible after installation | no | `{"available": false}` |
-| torch is importable | no |  |
-| vLLM is importable | no | `{"error": "No module named 'vllm'", "error_type": "ModuleNotFoundError", "ok": false}` |
-| huggingface_hub is importable | no |  |
+| HF token is loaded | no |  |
+| Hugging Face search can run | no |  |
+| Each configured model has at least one accessible candidate | no |  |
+| Expected filenames are confirmed or require explicit config update | yes |  |
 
 ## Conclusion
 
-vLLM is still not importable. Inspect pip output, restart the Colab runtime if packages changed, then rerun vllm-setup.
+Review Hugging Face search queries and model naming; no accessible candidate repo was found for at least one model.
 
 ## Artifacts
 
-- `results/vllm_setup.json`
-- `reports/experiment_summary.md`
-- `reports/experiment_summary.json`
+- `results/artifact_discovery.json`
+- `reports/experiment_summary_artifact-discovery.md`
+- `reports/experiment_summary_artifact-discovery.json`

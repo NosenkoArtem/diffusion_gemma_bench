@@ -30,7 +30,7 @@
   "metrics": [
     {
       "metric": "discovery_status",
-      "note": "hf_token_missing, huggingface_hub_not_importable, search_disabled, model_search_failed, candidate_repo_missing",
+      "note": "hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing",
       "status": "ARTIFACT_DISCOVERY_NEEDS_REVIEW",
       "value": "ARTIFACT_DISCOVERY_NEEDS_REVIEW"
     },
@@ -110,6 +110,6 @@
     "Select best repo/file candidates for DG-Native, G26-AR, and G26-MTP.",
     "Produce a reviewable recommendation before editing model config."
   ],
-  "timestamp": "2026-06-28T14:12:01+00:00",
+  "timestamp": "2026-06-28T18:16:40+00:00",
   "title": "Experiment 5: Model Artifact Discovery"
 }

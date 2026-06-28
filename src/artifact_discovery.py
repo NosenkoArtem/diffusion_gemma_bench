@@ -8,6 +8,7 @@ Face metadata and records candidate repos/files without downloading weights.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 from .experiment_summary import write_experiment_summary
@@ -26,7 +27,13 @@ DISCOVERY_QUERIES = {
 }
 
 
-def run_artifact_discovery(profile: str = "auto", *, enable_search: bool = True) -> dict[str, Any]:
+def run_artifact_discovery(
+    profile: str = "auto",
+    *,
+    enable_search: bool = True,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Search HF metadata for repo/file candidates and persist artifacts."""
 
     models_config = load_yaml(project_path("configs", "models.yaml")).get("models", {})
@@ -50,8 +57,8 @@ def run_artifact_discovery(profile: str = "auto", *, enable_search: bool = True)
         "git": git_revision(),
         "next_step": next_step(status, reasons),
     }
-    write_json(RESULTS_DIR / "artifact_discovery.json", result)
-    write_artifact_discovery_summary(result)
+    write_json(results_dir / "artifact_discovery.json", result)
+    write_artifact_discovery_summary(result, results_dir=results_dir, reports_dir=reports_dir)
     return result
 
 
@@ -203,7 +210,12 @@ def blocking_reasons(models: list[dict[str, Any]], hf_token_present: bool, hf_hu
     return unique(reasons)
 
 
-def write_artifact_discovery_summary(result: dict[str, Any]) -> dict[str, Any]:
+def write_artifact_discovery_summary(
+    result: dict[str, Any],
+    *,
+    results_dir: Path = RESULTS_DIR,
+    reports_dir: Path | None = None,
+) -> dict[str, Any]:
     """Write Markdown/JSON summary for Experiment 5."""
 
     metrics = [
@@ -258,6 +270,8 @@ def write_artifact_discovery_summary(result: dict[str, Any]) -> dict[str, Any]:
         criteria=criteria,
         conclusion=result["next_step"],
         artifacts=["results/artifact_discovery.json", "reports/experiment_summary_artifact-discovery.md", "reports/experiment_summary_artifact-discovery.json"],
+        results_dir=results_dir,
+        reports_dir=reports_dir or project_path("reports"),
     )
 
 

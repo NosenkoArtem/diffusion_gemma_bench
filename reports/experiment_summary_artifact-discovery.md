@@ -2,7 +2,7 @@
 
 - Phase: `artifact-discovery`
 - Profile: `q6_core_native`
-- Timestamp: `2026-06-28T14:12:01+00:00`
+- Timestamp: `2026-06-28T18:16:40+00:00`
 
 ## Objective
 
@@ -19,7 +19,7 @@ Find correct Hugging Face repositories and visible weight files for the configur
 
 | metric | value | status | note |
 | --- | --- | --- | --- |
-| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, search_disabled, model_search_failed, candidate_repo_missing |
+| discovery_status | ARTIFACT_DISCOVERY_NEEDS_REVIEW | ARTIFACT_DISCOVERY_NEEDS_REVIEW | hf_token_missing, huggingface_hub_not_importable, model_search_failed, candidate_repo_missing |
 | hf_token_present | no | blocked |  |
 | huggingface_hub_version |  | blocked |  |
 | DG-Native_best_repo |  | missing | expected_file_visible=None |
