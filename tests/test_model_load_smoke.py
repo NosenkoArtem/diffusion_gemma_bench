@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from src.model_load_smoke import run_model_load_smoke
+from src.model_load_smoke import classify_load_error, run_model_load_smoke
 
 
 class ModelLoadSmokeTests(unittest.TestCase):
@@ -29,6 +29,11 @@ class ModelLoadSmokeTests(unittest.TestCase):
             self.assertEqual(result["models"][0]["filename"], "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf")
             self.assertTrue((root / "results" / "model_load_smoke.json").exists())
             self.assertTrue((root / "reports" / "experiment_summary_model-load-smoke.md").exists())
+
+    def test_vllm_layerwise_kv_heads_error_is_classified(self):
+        error = TypeError("Field 'num_key_value_heads' expected int, got list (value: [8, 2])")
+
+        self.assertEqual(classify_load_error(error), "vllm_model_config_incompatible")
 
 
 if __name__ == "__main__":

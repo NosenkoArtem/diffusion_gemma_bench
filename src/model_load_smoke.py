@@ -217,9 +217,11 @@ def load_vllm_engine(
         empty_cuda_cache()
     except Exception as exc:
         record["status"] = "LOAD_FAILED"
+        category = classify_load_error(exc)
         record["load"].update(
             {
                 "ok": False,
+                "error_category": category,
                 "elapsed_s": round(time.perf_counter() - started, 3),
                 "error_type": type(exc).__name__,
                 "error": safe_error(exc),
@@ -261,6 +263,8 @@ def blocking_reasons(
         reasons.append("download_failed")
     if any(model.get("status") == "LOAD_FAILED" for model in models):
         reasons.append("load_failed")
+    if any(model.get("load", {}).get("error_category") == "vllm_model_config_incompatible" for model in models):
+        reasons.append("vllm_model_config_incompatible")
     if any(model.get("status") in {"CONFIG_ERROR", "BLOCKED"} for model in models):
         reasons.append("model_blocked")
     if load_enabled and not any(model.get("status") == "LOAD_PASSED" for model in models):
@@ -294,6 +298,7 @@ def write_model_load_smoke_summary(
                 {"metric": f"{model['model_id']}_status", "value": model["status"], "status": "ok" if model["status"] == "LOAD_PASSED" else "review", "note": ""},
                 {"metric": f"{model['model_id']}_download_s", "value": model["download"].get("elapsed_s"), "status": "info", "note": download_error_note},
                 {"metric": f"{model['model_id']}_load_s", "value": model["load"].get("elapsed_s"), "status": "info", "note": load_error_note},
+                {"metric": f"{model['model_id']}_load_error_category", "value": model["load"].get("error_category"), "status": "review" if model["load"].get("error_category") else "info", "note": ""},
                 {"metric": f"{model['model_id']}_traceback_tail", "value": traceback_tail, "status": "info", "note": ""},
                 {"metric": f"{model['model_id']}_artifact_bytes", "value": model["download"].get("size_bytes"), "status": "info", "note": model.get("filename")},
             ]
@@ -334,8 +339,23 @@ def next_step(status: str, reasons: list[str]) -> str:
     if "download_failed" in reasons:
         return "Inspect Hugging Face download error, token access, disk space, and cache path before retrying."
     if "load_failed" in reasons:
+        if "vllm_model_config_incompatible" in reasons:
+            return "Current vLLM loads but cannot parse this model config. Try a different artifact/backend path before tuning memory settings."
         return "Inspect vLLM load traceback. If this is an ImportError or GGUF support issue, repair the backend before changing GPU memory settings."
     return "Resolve listed blockers, then rerun model-load-smoke."
+
+
+def classify_load_error(exc: Exception) -> str:
+    """Map known vLLM load failures to stable report categories."""
+
+    text = f"{type(exc).__name__}: {safe_error(exc)}".lower()
+    if "num_key_value_heads" in text and "expected int" in text and "got list" in text:
+        return "vllm_model_config_incompatible"
+    if "libcudart.so.13" in text:
+        return "cuda_runtime_missing"
+    if "out of memory" in text or "cuda oom" in text:
+        return "gpu_oom"
+    return "unknown_load_error"
 
 
 def package_versions() -> dict[str, Any]:
