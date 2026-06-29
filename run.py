@@ -17,6 +17,7 @@ from src.bfcl_runner import run_bfcl_lite
 from src.artifact_discovery import run_artifact_discovery
 from src.backend_check import run_backend_check
 from src.backend_smoke import run_backend_smoke
+from src.llama_load_smoke import run_llama_load_smoke
 from src.model_load_smoke import run_model_load_smoke
 from src.model_gate import run_model_gate
 from src.preflight import run_preflight
@@ -33,6 +34,7 @@ PHASES = {
     "vllm-setup",
     "artifact-discovery",
     "model-load-smoke",
+    "llama-load-smoke",
     "smoke",
     "pilot",
     "core",
@@ -55,6 +57,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true", help="Allow model-load-smoke to write diagnostics without download/load")
     parser.add_argument("--max-model-len", type=int, default=512, help="Conservative vLLM context length for model-load-smoke")
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.82, help="vLLM GPU memory utilization for model-load-smoke")
+    parser.add_argument("--llama-cli-path", default=None, help="Optional path to llama.cpp llama-cli for llama-load-smoke")
+    parser.add_argument("--llama-timeout-s", type=int, default=300, help="Per-model llama.cpp smoke timeout")
     return parser.parse_args(argv)
 
 
@@ -106,6 +110,23 @@ def main(argv: list[str] | None = None) -> int:
             gpu_memory_utilization=args.gpu_memory_utilization,
         )
         print_model_load_smoke_summary(result)
+        return 0
+
+    if args.phase == "llama-load-smoke":
+        if not args.confirm_go:
+            raise SystemExit("llama-load-smoke requires --confirm-go because it may download large files and allocate GPU memory.")
+        if not (args.download or args.load or args.dry_run):
+            raise SystemExit("llama-load-smoke requires --download/--load for a real run, or --dry-run for diagnostics only.")
+        result = run_llama_load_smoke(
+            args.profile,
+            targets=tuple(item.strip() for item in args.targets.split(",") if item.strip()),
+            download_enabled=args.download,
+            load_enabled=args.load,
+            llama_cli_path=args.llama_cli_path,
+            max_context=args.max_model_len,
+            timeout_s=args.llama_timeout_s,
+        )
+        print_llama_load_smoke_summary(result)
         return 0
 
     if args.phase == "report":
@@ -259,6 +280,31 @@ def print_model_load_smoke_summary(result: dict[str, Any]) -> None:
         )
         if model.get("load", {}).get("error_type"):
             print(f"  load_error: {model['load']['error_type']} {model['load'].get('error')}")
+        if model.get("download", {}).get("error_type"):
+            print(f"  download_error: {model['download']['error_type']} {model['download'].get('error')}")
+    print(f"next_step: {result['next_step']}")
+
+
+def print_llama_load_smoke_summary(result: dict[str, Any]) -> None:
+    """Compact llama-load-smoke summary for notebook output."""
+
+    print(f"status: {result['status']}")
+    print(f"reasons: {result['reasons']}")
+    print(f"targets: {result['targets']}")
+    print(f"settings: {result['settings']}")
+    print(f"llama_cli: {result['tools']['llama_cli']}")
+    print(f"gpu: {result['hardware']['gpu']}")
+    print(f"disk: {result['hardware']['disk']}")
+    for model in result["models"]:
+        print(
+            "model: "
+            f"{model['model_id']} status={model.get('status')} "
+            f"download_ok={model.get('download', {}).get('ok')} "
+            f"load_ok={model.get('load', {}).get('ok')} "
+            f"file={model.get('filename')}"
+        )
+        if model.get("load", {}).get("error_category"):
+            print(f"  load_error: {model['load'].get('error_category')} {model['load'].get('error')}")
         if model.get("download", {}).get("error_type"):
             print(f"  download_error: {model['download']['error_type']} {model['download'].get('error')}")
     print(f"next_step: {result['next_step']}")

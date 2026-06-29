@@ -9,7 +9,7 @@ models:
       q5_core_native: diffusiongemma-26B-A4B-it-Q5_K_M.gguf
       q4_pilot: diffusiongemma-26B-A4B-it-Q4_K_M.gguf
     deployment:
-      backend: vllm
+      backend: llama.cpp
       sampler: native_diffusion
       native_kv_cache: true
       cpu_offload: false
@@ -29,7 +29,7 @@ models:
       q5_core_native: UD-Q4_K_XL
       q4_pilot: UD-Q4_K_XL
     deployment:
-      backend: vllm
+      backend: llama.cpp
       speculative_decoding: false
       native_kv_cache: true
       cpu_offload: false
@@ -45,7 +45,7 @@ models:
       precision: bfloat16
       method: mtp
     deployment:
-      backend: vllm
+      backend: deferred_after_llama_cpp_baseline
       speculative_decoding: official_mtp_assistant_only
       native_kv_cache: true
       cpu_offload: false

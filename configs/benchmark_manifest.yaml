@@ -92,6 +92,21 @@ phases:
       - load_time_recorded
       - memory_snapshot_recorded
       - no_model_load_exception
+  llama_load_smoke:
+    command: python run.py --profile <selected_profile> --phase llama-load-smoke --targets G26-AR,DG-Native --download --load --confirm-go
+    requires:
+      - artifact_discovery
+      - model_gate
+    writes:
+      - results/llama_load_smoke.json
+      - reports/experiment_summary_llama-load-smoke.md
+      - reports/experiment_summary_llama-load-smoke.json
+    checks:
+      - llama_cpp_cli_available
+      - both_target_artifacts_downloaded_or_cached
+      - same_llama_cpp_command_shape_for_both_models
+      - per_model_load_latency_recorded
+      - stdout_stderr_tail_recorded_on_failure
   smoke:
     command: python run.py --profile <selected_profile> --phase smoke
     requires:
