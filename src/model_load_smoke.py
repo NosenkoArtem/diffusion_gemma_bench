@@ -43,12 +43,14 @@ def run_model_load_smoke(
     hf_token_present = bool(os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN"))
     cuda_runtime = prepare_cuda_runtime()
     packages = package_versions()
+    imports = import_statuses()
     model_results = [
         smoke_one_model(
             model_id,
             models_config.get(model_id, {}),
             profile=profile,
             hf_token_present=hf_token_present,
+            imports=imports,
             download_enabled=download_enabled,
             load_enabled=load_enabled,
             max_model_len=max_model_len,
@@ -74,6 +76,7 @@ def run_model_load_smoke(
         },
         "hf_token": {"present": hf_token_present},
         "packages": packages,
+        "imports": imports,
         "cuda_runtime": cuda_runtime,
         "hardware": hardware_snapshot(),
         "models": model_results,
@@ -91,6 +94,7 @@ def smoke_one_model(
     *,
     profile: str,
     hf_token_present: bool,
+    imports: dict[str, dict[str, Any]],
     download_enabled: bool,
     load_enabled: bool,
     max_model_len: int,
@@ -120,13 +124,15 @@ def smoke_one_model(
         record["status"] = "BLOCKED"
         record["error_type"] = "hf_token_missing"
         return finalize_model_record(record)
-    if module_version("huggingface_hub") is None:
+    if not imports["huggingface_hub"].get("ok"):
         record["status"] = "BLOCKED"
         record["error_type"] = "huggingface_hub_not_importable"
+        record["download"]["import_status"] = imports["huggingface_hub"]
         return finalize_model_record(record)
-    if load_enabled and module_version("vllm") is None:
+    if load_enabled and not imports["vllm"].get("ok"):
         record["status"] = "BLOCKED"
         record["error_type"] = "vllm_not_importable"
+        record["load"]["import_status"] = imports["vllm"]
         return finalize_model_record(record)
 
     local_path: Path | None = None
@@ -274,6 +280,7 @@ def write_model_load_smoke_summary(
         {"metric": "status", "value": result["status"], "status": result["status"], "note": ", ".join(result["reasons"])},
         {"metric": "download_enabled", "value": result["settings"]["download_enabled"], "status": "info", "note": ""},
         {"metric": "load_enabled", "value": result["settings"]["load_enabled"], "status": "info", "note": ""},
+        {"metric": "vllm_importable", "value": result["imports"]["vllm"].get("ok"), "status": "ok" if result["imports"]["vllm"].get("ok") else "blocked", "note": result["imports"]["vllm"].get("error") or result["imports"]["vllm"].get("version")},
         {"metric": "cuda_runtime_preloaded", "value": result["cuda_runtime"].get("preloaded"), "status": "info", "note": result["cuda_runtime"].get("preload_error") or result["cuda_runtime"].get("preloaded_path")},
         {"metric": "gpu", "value": result["hardware"]["gpu"].get("name"), "status": "info", "note": result["hardware"]["gpu"]},
         {"metric": "disk_free_gib", "value": result["hardware"]["disk"].get("free_gib"), "status": "info", "note": ""},
@@ -340,6 +347,25 @@ def package_versions() -> dict[str, Any]:
         "huggingface_hub": module_version("huggingface_hub"),
         "psutil": module_version("psutil"),
     }
+
+
+def import_statuses() -> dict[str, dict[str, Any]]:
+    """Return import status for modules that can block model loading."""
+
+    return {
+        "huggingface_hub": import_status("huggingface_hub"),
+        "vllm": import_status("vllm"),
+    }
+
+
+def import_status(module_name: str) -> dict[str, Any]:
+    """Import a module and return a JSON-safe status object."""
+
+    try:
+        module = __import__(module_name)
+    except Exception as exc:
+        return {"ok": False, "error_type": type(exc).__name__, "error": safe_error(exc)}
+    return {"ok": True, "version": getattr(module, "__version__", "unknown")}
 
 
 def prepare_cuda_runtime() -> dict[str, Any]:
